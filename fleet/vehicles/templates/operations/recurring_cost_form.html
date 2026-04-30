@@ -1,0 +1,77 @@
+{% extends 'base.html' %}
+{% block title %}{% if form.instance.pk %}Modifier le coût{% else %}Nouveau coût récurrent{% endif %}{% endblock %}
+{% block nav_contracts %}active{% endblock %}
+
+{% block breadcrumb %}
+  Opérations /
+  <a href="{% url 'operations:contract-list' %}">Contrats</a> /
+  {% if contract %}
+    <a href="{% url 'operations:contract-detail' contract.pk %}">{{ contract.name }}</a> /
+  {% endif %}
+  <span class="bc-current">Coût récurrent</span>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="page-header">
+      <h1>{% if form.instance.pk %}Modifier le coût récurrent{% else %}Nouveau coût récurrent{% endif %}</h1>
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+      {% if form.errors %}
+        <div class="alert alert-danger mb-3">
+          <i class="bi bi-exclamation-triangle me-2"></i>Veuillez corriger les erreurs.
+        </div>
+      {% endif %}
+
+      <div class="card mb-4">
+        <div class="card-body p-4">
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label">Contrat *</label>
+              {{ form.contract }}
+            </div>
+            <div class="col-12">
+              <label class="form-label">Description *</label>
+              {{ form.description }}
+            </div>
+            <div class="col-md-5">
+              <label class="form-label">Montant *</label>
+              {{ form.amount }}
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Devise</label>
+              {{ form.currency }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Période *</label>
+              {{ form.period }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2 justify-content-end">
+        <a href="javascript:history.back()" class="btn btn-outline-secondary">
+          <i class="bi bi-x-lg me-1"></i>Annuler
+        </a>
+        <button type="submit" class="btn btn-primary">
+          <i class="bi bi-check-lg me-1"></i>
+          {% if form.instance.pk %}Enregistrer{% else %}Créer{% endif %}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.querySelectorAll('input:not([type=checkbox]), select, textarea').forEach(el => {
+    if (el.tagName === 'SELECT') el.classList.add('form-select');
+    else el.classList.add('form-control');
+  });
+</script>
+{% endblock %}

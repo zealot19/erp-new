@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% block title %}{% if view.kwargs.pk %}Modifier le modèle{% else %}Nouveau modèle{% endif %}{% endblock %}
+{% block nav_vehicle_models %}active{% endblock %}
+
+{% block breadcrumb %}
+  Flotte /
+  <a href="{% url 'vehicles:vehicle-model-list' %}">Modèles</a> /
+  <span class="bc-current">{% if view.kwargs.pk %}Modifier{% else %}Nouveau{% endif %}</span>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-xl-10">
+    <div class="page-header">
+      <h1>{% if view.kwargs.pk %}Modifier le modèle{% else %}Nouveau modèle de véhicule{% endif %}</h1>
+    </div>
+
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      {% if form.errors %}
+        <div class="alert alert-danger mb-3"><i class="bi bi-exclamation-triangle me-2"></i>Veuillez corriger les erreurs.</div>
+      {% endif %}
+
+      <!-- Identification -->
+      <div class="card mb-4">
+        <div class="card-header">Identification</div>
+        <div class="card-body p-4">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">Fabricant *</label>
+              {{ form.manufacturer }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Nom du modèle *</label>
+              {{ form.name }}
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Année *</label>
+              {{ form.model_year }}
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Type de véhicule *</label>
+              {{ form.vehicle_type }}
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Couleur</label>
+              {{ form.color }}
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Sièges</label>
+              {{ form.seats }}
+            </div>
+            <div class="col-md-2">
+              <label class="form-label">Portes</label>
+              {{ form.doors }}
+            </div>
+            <div class="col-md-3 d-flex align-items-center pt-4">
+              <div class="form-check">
+                {{ form.has_tow_hitch }}
+                <label class="form-check-label ms-2">Attelage remorque</label>
+              </div>
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Image</label>
+              {{ form.image }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Motorisation -->
+      <div class="card mb-4">
+        <div class="card-header">Motorisation</div>
+        <div class="card-body p-4">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">Type de carburant *</label>
+              {{ form.fuel_type }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Transmission *</label>
+              {{ form.transmission }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Type de traction *</label>
+              {{ form.traction_type }}
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Puissance</label>
+              {{ form.power }}
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Unité de puissance</label>
+              {{ form.power_unit }}
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Émissions CO2</label>
+              {{ form.co2_emission }}
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Unité émissions</label>
+              {{ form.emission_unit }}
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Autonomie</label>
+              {{ form.range_value }}
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Unité autonomie</label>
+              {{ form.range_unit }}
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Norme d'émission</label>
+              {{ form.emission_standard }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fournisseurs -->
+      <div class="card mb-4">
+        <div class="card-header">Fournisseurs</div>
+        <div class="card-body p-4">
+          <label class="form-label">Fournisseurs / Concessionnaires</label>
+          {{ form.suppliers }}
+        </div>
+      </div>
+
+      <div class="d-flex gap-2 justify-content-end">
+        <a href="{% url 'vehicles:vehicle-model-list' %}" class="btn btn-outline-secondary">
+          <i class="bi bi-x-lg me-1"></i>Annuler
+        </a>
+        <button type="submit" class="btn btn-primary">
+          <i class="bi bi-check-lg me-1"></i>
+          {% if view.kwargs.pk %}Enregistrer{% else %}Créer{% endif %}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.querySelectorAll('input:not([type=checkbox]):not([type=radio]):not([type=file]), select, textarea').forEach(el => {
+    if (el.tagName === 'SELECT') el.classList.add('form-select');
+    else el.classList.add('form-control');
+  });
+</script>
+{% endblock %}

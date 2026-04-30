@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% block title %}Parkings{% endblock %}
+{% block nav_parkings %}active{% endblock %}
+{% block breadcrumb %}Flotte / <span class="bc-current">Parkings</span>{% endblock %}
+{% block topbar_actions %}
+  <a href="{% url 'vehicles:parking-create' %}" class="btn btn-primary btn-sm">
+    <i class="bi bi-plus-lg me-1"></i>Nouveau parking
+  </a>
+{% endblock %}
+{% block content %}
+<div class="page-header"><h1>Parkings</h1></div>
+<div class="card">
+  {% if parkings %}
+  <div class="table-responsive">
+    <table class="table table-fleet mb-0">
+      <thead>
+        <tr>
+          <th>Nom</th>
+          <th>Localisation</th>
+          <th>Véhicules</th>
+          <th>Notes</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for p in parkings %}
+        <tr>
+          <td class="fw-600">{{ p.name }}</td>
+          <td>{{ p.location|default:"—" }}</td>
+          <td>
+            <span class="badge-state badge-new">{{ p.vehicles.count }}</span>
+          </td>
+          <td class="text-muted small">{{ p.notes|truncatechars:60|default:"—" }}</td>
+          <td class="text-end">
+            <a href="{% url 'vehicles:parking-detail' p.pk %}" class="btn btn-sm btn-outline-secondary py-0 px-2"><i class="bi bi-eye"></i></a>
+            <a href="{% url 'vehicles:parking-update' p.pk %}" class="btn btn-sm btn-outline-primary py-0 px-2"><i class="bi bi-pencil"></i></a>
+            <a href="{% url 'vehicles:parking-delete' p.pk %}" class="btn btn-sm btn-outline-danger py-0 px-2"><i class="bi bi-trash"></i></a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <i class="bi bi-p-square"></i>
+    <p>Aucun parking enregistré.</p>
+    <a href="{% url 'vehicles:parking-create' %}" class="btn btn-primary btn-sm mt-3"><i class="bi bi-plus-lg me-1"></i>Ajouter un parking</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

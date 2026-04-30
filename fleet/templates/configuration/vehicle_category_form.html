@@ -1,0 +1,10 @@
+{% extends 'configuration/_config_form_base.html' %}
+{% block nav_vehicle_categories %}active{% endblock %}
+{% block form_title %}Catégorie de véhicule{% endblock %}
+{% block list_url %}{% url 'configuration:vehicle-category-list' %}{% endblock %}
+{% block list_label %}Catégories{% endblock %}
+{% block form_heading %}{% if view.kwargs.pk %}Modifier la catégorie{% else %}Nouvelle catégorie de véhicule{% endif %}{% endblock %}
+{% block form_fields %}
+  <div class="col-12"><label class="form-label">Nom *</label>{{ form.name }}</div>
+{% endblock %}
+{% block cancel_url %}{% url 'configuration:vehicle-category-list' %}{% endblock %}

@@ -1,0 +1,11 @@
+{% extends 'configuration/_config_form_base.html' %}
+{% block form_title %}Unité{% endblock %}
+{% block list_url %}{% url 'configuration:unit-list' %}{% endblock %}
+{% block list_label %}Unités{% endblock %}
+{% block form_heading %}{% if form.instance.pk %}Modifier l'unité{% else %}Nouvelle unité de mesure{% endif %}{% endblock %}
+{% block form_fields %}
+  <div class="col-md-4"><label class="form-label">Code *</label>{{ form.code }}<div class="form-text">Ex : km, kW, g/km</div></div>
+  <div class="col-md-8"><label class="form-label">Nom *</label>{{ form.name }}</div>
+  <div class="col-12"><label class="form-label">Catégorie *</label>{{ form.category }}</div>
+{% endblock %}
+{% block cancel_url %}{% url 'configuration:unit-list' %}{% endblock %}

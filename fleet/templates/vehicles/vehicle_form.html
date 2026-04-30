@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if view.kwargs.pk %}Modifier {{ form.instance.license_plate }}{% else %}Nouveau véhicule{% endif %}{% endblock %}
+{% block nav_vehicles %}active{% endblock %}
+
+{% block breadcrumb %}
+  Flotte /
+  <a href="{% url 'vehicles:vehicle-list' %}">Véhicules</a> /
+  <span class="bc-current">{% if view.kwargs.pk %}Modifier{% else %}Nouveau{% endif %}</span>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-xl-10">
+
+    <div class="page-header">
+      <h1>{% if view.kwargs.pk %}Modifier le véhicule{% else %}Nouveau véhicule{% endif %}</h1>
+    </div>
+
+    <form method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+
+      {% if form.errors %}
+      <div class="alert alert-danger mb-4">
+        <i class="bi bi-exclamation-triangle me-2"></i>
+        Veuillez corriger les erreurs ci-dessous.
+      </div>
+      {% endif %}
+
+      <!-- Section: Identification -->
+      <div class="card mb-4">
+        <div class="card-header">Identification</div>
+        <div class="card-body p-4">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">Immatriculation *</label>
+              {{ form.license_plate }}
+              {% if form.license_plate.errors %}
+                <div class="invalid-feedback d-block">{{ form.license_plate.errors|join:", " }}</div>
+              {% endif %}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">VIN / Numéro de châssis *</label>
+              {{ form.vin }}
+              {% if form.vin.errors %}
+                <div class="invalid-feedback d-block">{{ form.vin.errors|join:", " }}</div>
+              {% endif %}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">État</label>
+              {{ form.state }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Modèle de véhicule *</label>
+              {{ form.vehicle_model }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Catégorie *</label>
+              {{ form.category }}
+            </div>
+            <div class="col-12">
+              <label class="form-label">Étiquettes</label>
+              {{ form.tags }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Affectation -->
+      <div class="card mb-4">
+        <div class="card-header">Affectation</div>
+        <div class="card-body p-4">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">Conducteur actuel</label>
+              {{ form.driver }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Responsable flotte</label>
+              {{ form.fleet_manager }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Parking</label>
+              {{ form.parking }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Dates -->
+      <div class="card mb-4">
+        <div class="card-header">Dates</div>
+        <div class="card-body p-4">
+          <div class="row g-3">
+            <div class="col-md-3">
+              <label class="form-label">Date de commande</label>
+              {{ form.order_date }}
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Date d'immatriculation</label>
+              {{ form.registration_date }}
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Date d'annulation</label>
+              {{ form.cancellation_date }}
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">1er contrat</label>
+              {{ form.first_contract_date }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Section: Finances -->
+      <div class="card mb-4">
+        <div class="card-header">Valeurs financières</div>
+        <div class="card-body p-4">
+          <div class="row g-3">
+            <div class="col-md-3">
+              <label class="form-label">Chevaux fiscaux</label>
+              {{ form.fiscal_horsepower }}
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Valeur catalogue TTC</label>
+              {{ form.catalog_value }}
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Valeur d'achat</label>
+              {{ form.purchase_value }}
+            </div>
+            <div class="col-md-3">
+              <label class="form-label">Valeur résiduelle</label>
+              {{ form.residual_value }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Notes -->
+      <div class="card mb-4">
+        <div class="card-header">Notes</div>
+        <div class="card-body p-4">
+          {{ form.notes }}
+        </div>
+      </div>
+
+      <!-- Actions -->
+      <div class="d-flex gap-2 justify-content-end">
+        <a href="{% url 'vehicles:vehicle-list' %}" class="btn btn-outline-secondary">
+          <i class="bi bi-x-lg me-1"></i>Annuler
+        </a>
+        <button type="submit" class="btn btn-primary">
+          <i class="bi bi-check-lg me-1"></i>
+          {% if view.kwargs.pk %}Enregistrer les modifications{% else %}Créer le véhicule{% endif %}
+        </button>
+      </div>
+
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  // Apply Bootstrap classes to all form fields
+  document.querySelectorAll('input:not([type=checkbox]):not([type=radio]), select, textarea').forEach(el => {
+    if (el.tagName === 'SELECT') el.classList.add('form-select');
+    else el.classList.add('form-control');
+    if (el.name === 'tags') el.setAttribute('multiple', '');
+  });
+  document.querySelectorAll('input[type=date]').forEach(el => el.type = 'date');
+</script>
+{% endblock %}

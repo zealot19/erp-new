@@ -1,0 +1,8 @@
+{% extends 'configuration/_config_form_base.html' %}
+{% block nav_fuel_types %}active{% endblock %}
+{% block form_title %}Type de carburant{% endblock %}
+{% block list_url %}{% url 'configuration:fuel-type-list' %}{% endblock %}
+{% block list_label %}Types de carburant{% endblock %}
+{% block form_heading %}{% if view.kwargs.pk %}Modifier{% else %}Nouveau type de carburant{% endif %}{% endblock %}
+{% block form_fields %}<div class="col-12"><label class="form-label">Nom *</label>{{ form.name }}</div>{% endblock %}
+{% block cancel_url %}{% url 'configuration:fuel-type-list' %}{% endblock %}

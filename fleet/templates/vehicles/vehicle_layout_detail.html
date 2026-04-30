@@ -1,0 +1,86 @@
+{% extends 'base.html' %}
+{% block title %}{{ layout.name }}{% endblock %}
+{% block nav_vehicles %}active{% endblock %}
+{% block breadcrumb %}
+  Flotte / <a href="{% url 'vehicles:vehicle-detail' layout.vehicle.pk %}">{{ layout.vehicle.license_plate }}</a> /
+  <span class="bc-current">{{ layout.name }}</span>
+{% endblock %}
+{% block topbar_actions %}
+  <a href="{% url 'vehicles:seat-create' layout.pk %}" class="btn btn-outline-secondary btn-sm"><i class="bi bi-plus-lg me-1"></i>Ajouter siège</a>
+  <a href="{% url 'vehicles:vehicle-layout-update' layout.pk %}" class="btn btn-primary btn-sm"><i class="bi bi-pencil me-1"></i>Modifier</a>
+{% endblock %}
+{% block content %}
+<div class="row g-4">
+  <div class="col-md-4">
+    <div class="card">
+      <div class="card-header">Informations</div>
+      <div class="card-body p-4">
+        <div class="info-item mb-3">
+          <div class="info-label">Nom</div><div class="info-value">{{ layout.name }}</div>
+        </div>
+        <div class="info-item mb-3">
+          <div class="info-label">Véhicule</div>
+          <div class="info-value"><a href="{% url 'vehicles:vehicle-detail' layout.vehicle.pk %}">{{ layout.vehicle.license_plate }}</a></div>
+        </div>
+        <div class="info-item mb-3">
+          <div class="info-label">Total sièges</div><div class="info-value">{{ layout.total_seats }}</div>
+        </div>
+        <div class="info-item mb-3">
+          <div class="info-label">Sièges définis</div><div class="info-value">{{ seats.count }}</div>
+        </div>
+        <div class="info-item">
+          <div class="info-label">Statut</div>
+          <div class="info-value">
+            {% if layout.is_active %}<span class="badge-state badge-done">Active</span>
+            {% else %}<span class="badge-state badge-inactive">Inactive</span>{% endif %}
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Plan des sièges</span>
+        <a href="{% url 'vehicles:seat-create' layout.pk %}" class="btn btn-sm btn-primary"><i class="bi bi-plus-lg me-1"></i>Siège</a>
+      </div>
+      <div class="card-body p-4">
+        {% if seats %}
+        <div class="table-responsive">
+          <table class="table table-fleet mb-0">
+            <thead>
+              <tr><th>Numéro</th><th>Rangée</th><th>Colonne</th><th>Type</th><th>Disponible</th><th class="text-end">Actions</th></tr>
+            </thead>
+            <tbody>
+              {% for seat in seats %}
+              <tr>
+                <td class="fw-600 font-mono">{{ seat.seat_number }}</td>
+                <td>{{ seat.row }}</td>
+                <td>{{ seat.column }}</td>
+                <td>
+                  {% if seat.seat_type == 'VIP' %}<span class="badge-state badge-progress">VIP</span>
+                  {% elif seat.seat_type == 'DRIVER' %}<span class="badge-state badge-new">Conducteur</span>
+                  {% else %}<span class="badge-state badge-inactive">Standard</span>{% endif %}
+                </td>
+                <td>
+                  {% if seat.is_available %}<i class="bi bi-check-circle-fill text-success"></i>
+                  {% else %}<i class="bi bi-x-circle-fill text-danger"></i>{% endif %}
+                </td>
+                <td class="text-end">
+                  <a href="{% url 'vehicles:seat-update' seat.pk %}" class="btn btn-sm btn-outline-primary py-0 px-2"><i class="bi bi-pencil"></i></a>
+                  <a href="{% url 'vehicles:seat-delete' seat.pk %}" class="btn btn-sm btn-outline-danger py-0 px-2"><i class="bi bi-trash"></i></a>
+                </td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+        {% else %}
+        <div class="empty-state"><i class="bi bi-grid"></i><p>Aucun siège défini. Ajoutez des sièges à cette disposition.</p></div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

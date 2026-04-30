@@ -1,0 +1,30 @@
+{% extends 'base.html' %}
+{% block title %}Types de carburant{% endblock %}
+{% block nav_fuel_types %}active{% endblock %}
+{% block breadcrumb %}Configuration / <span class="bc-current">Types de carburant</span>{% endblock %}
+{% block topbar_actions %}<a href="{% url 'configuration:fuel-type-create' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i>Nouveau type</a>{% endblock %}
+{% block content %}
+<div class="page-header"><h1><i class="bi bi-fuel-pump me-2 text-primary"></i>Types de carburant</h1></div>
+<div class="card">
+  {% if fuel_types %}
+  <div class="table-responsive">
+    <table class="table table-fleet mb-0">
+      <thead><tr><th>Nom</th><th class="text-end">Actions</th></tr></thead>
+      <tbody>
+        {% for obj in fuel_types %}
+        <tr>
+          <td class="fw-600">{{ obj.name }}</td>
+          <td class="text-end">
+            <a href="{% url 'configuration:fuel-type-update' obj.pk %}" class="btn btn-sm btn-outline-primary py-0 px-2"><i class="bi bi-pencil"></i></a>
+            <a href="{% url 'configuration:fuel-type-delete' obj.pk %}" class="btn btn-sm btn-outline-danger py-0 px-2"><i class="bi bi-trash"></i></a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state"><i class="bi bi-fuel-pump"></i><p>Aucun type de carburant.</p></div>
+  {% endif %}
+</div>
+{% endblock %}

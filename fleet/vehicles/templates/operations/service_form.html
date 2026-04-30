@@ -1,0 +1,82 @@
+{% extends 'base.html' %}
+{% block title %}{% if form.instance.pk %}Modifier le service{% else %}Nouveau service{% endif %}{% endblock %}
+{% block nav_services %}active{% endblock %}
+{% block breadcrumb %}
+  Opérations / <a href="{% url 'operations:service-list' %}">Services</a> /
+  <span class="bc-current">{% if form.instance.pk %}Modifier{% else %}Nouveau{% endif %}</span>
+{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-xl-9">
+    <div class="page-header"><h1>{% if form.instance.pk %}Modifier le service{% else %}Nouveau service{% endif %}</h1></div>
+    <form method="post">
+      {% csrf_token %}
+      {% if form.errors %}<div class="alert alert-danger mb-3"><i class="bi bi-exclamation-triangle me-2"></i>Veuillez corriger les erreurs.</div>{% endif %}
+
+      <div class="card mb-4">
+        <div class="card-header">Informations principales</div>
+        <div class="card-body p-4">
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label">Description *</label>{{ form.description }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Véhicule *</label>{{ form.vehicle }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Type d'intervention *</label>{{ form.intervention_type }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Date *</label>{{ form.date }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Statut</label>{{ form.status }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Conducteur</label>{{ form.driver }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-4">
+        <div class="card-header">Coût & Fournisseur</div>
+        <div class="card-body p-4">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">Fournisseur</label>{{ form.supplier }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Coût</label>{{ form.cost }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Devise</label>{{ form.currency }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Relevé odométrique</label>{{ form.odometer_reading }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card mb-4">
+        <div class="card-header">Notes</div>
+        <div class="card-body p-4">{{ form.notes }}</div>
+      </div>
+
+      <div class="d-flex gap-2 justify-content-end">
+        <a href="{% url 'operations:service-list' %}" class="btn btn-outline-secondary"><i class="bi bi-x-lg me-1"></i>Annuler</a>
+        <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>{% if form.instance.pk %}Enregistrer{% else %}Créer{% endif %}</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+  document.querySelectorAll('input:not([type=checkbox]), select, textarea').forEach(el => {
+    if (el.tagName === 'SELECT') el.classList.add('form-select');
+    else el.classList.add('form-control');
+  });
+</script>
+{% endblock %}

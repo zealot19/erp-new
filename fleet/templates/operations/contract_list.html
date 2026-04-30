@@ -1,0 +1,90 @@
+{% extends 'base.html' %}
+{% block title %}Contrats{% endblock %}
+{% block nav_contracts %}active{% endblock %}
+{% block breadcrumb %}Opérations / <span class="bc-current">Contrats</span>{% endblock %}
+{% block topbar_actions %}
+  <a href="{% url 'operations:contract-create' %}" class="btn btn-primary btn-sm">
+    <i class="bi bi-plus-lg me-1"></i>Nouveau contrat
+  </a>
+{% endblock %}
+{% block content %}
+
+<div class="card mb-3">
+  <div class="card-body py-2 px-3 d-flex flex-wrap gap-2 align-items-center">
+    <form method="get" class="d-flex gap-2 flex-grow-1" style="max-width:360px;">
+      <div class="input-group input-group-sm">
+        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+        <input type="text" name="q" value="{{ request.GET.q }}" class="form-control border-start-0 ps-0" placeholder="Nom, référence, véhicule…">
+      </div>
+      <button type="submit" class="btn btn-primary btn-sm">OK</button>
+    </form>
+    <div class="ms-auto d-flex gap-2">
+      <select class="form-select form-select-sm" style="width:auto;" onchange="window.location.href='?status='+this.value">
+        <option value="">Tous les statuts</option>
+        <option value="DRAFT" {% if request.GET.status == 'DRAFT' %}selected{% endif %}>Brouillon</option>
+        <option value="ACTIVE" {% if request.GET.status == 'ACTIVE' %}selected{% endif %}>Actif</option>
+        <option value="EXPIRED" {% if request.GET.status == 'EXPIRED' %}selected{% endif %}>Expiré</option>
+        <option value="CANCELLED" {% if request.GET.status == 'CANCELLED' %}selected{% endif %}>Annulé</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  {% if contracts %}
+  <div class="table-responsive">
+    <table class="table table-fleet mb-0">
+      <thead>
+        <tr>
+          <th>Nom</th>
+          <th>Référence</th>
+          <th>Véhicule</th>
+          <th>Type</th>
+          <th>Fournisseur</th>
+          <th>Début</th>
+          <th>Fin</th>
+          <th>Statut</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in contracts %}
+        <tr>
+          <td class="fw-600">{{ c.name }}</td>
+          <td class="font-mono small text-muted">{{ c.reference|default:"—" }}</td>
+          <td><a href="{% url 'vehicles:vehicle-detail' c.vehicle.pk %}" class="font-mono fw-500">{{ c.vehicle.license_plate }}</a></td>
+          <td><span class="badge-state badge-inactive">{{ c.intervention_type.name }}</span></td>
+          <td>{{ c.supplier.name|default:"—" }}</td>
+          <td>{{ c.start_date|date:"d/m/Y" }}</td>
+          <td>
+            {% if c.is_expired and c.status == 'ACTIVE' %}
+              <span class="text-danger fw-600">{{ c.end_date|date:"d/m/Y" }} <i class="bi bi-exclamation-triangle-fill"></i></span>
+            {% else %}
+              {{ c.end_date|date:"d/m/Y" }}
+            {% endif %}
+          </td>
+          <td>
+            {% if c.status == 'ACTIVE' %}<span class="badge-state badge-done">Actif</span>
+            {% elif c.status == 'DRAFT' %}<span class="badge-state badge-draft">Brouillon</span>
+            {% elif c.status == 'EXPIRED' %}<span class="badge-state badge-expired">Expiré</span>
+            {% elif c.status == 'CANCELLED' %}<span class="badge-state badge-cancelled">Annulé</span>
+            {% endif %}
+          </td>
+          <td class="text-end">
+            <a href="{% url 'operations:contract-detail' c.pk %}" class="btn btn-sm btn-outline-secondary py-0 px-2"><i class="bi bi-eye"></i></a>
+            <a href="{% url 'operations:contract-update' c.pk %}" class="btn btn-sm btn-outline-primary py-0 px-2"><i class="bi bi-pencil"></i></a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <i class="bi bi-file-earmark-text"></i>
+    <p>Aucun contrat enregistré.</p>
+    <a href="{% url 'operations:contract-create' %}" class="btn btn-primary btn-sm mt-3"><i class="bi bi-plus-lg me-1"></i>Créer un contrat</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

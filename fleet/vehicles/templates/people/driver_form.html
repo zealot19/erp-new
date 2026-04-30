@@ -1,0 +1,106 @@
+{% extends 'base.html' %}
+{% block title %}{% if form.instance.pk %}Modifier {{ form.instance.full_name }}{% else %}Nouveau conducteur{% endif %}{% endblock %}
+{% block nav_drivers %}active{% endblock %}
+
+{% block breadcrumb %}
+  Personnes /
+  <a href="{% url 'people:driver-list' %}">Conducteurs</a> /
+  <span class="bc-current">{% if form.instance.pk %}Modifier{% else %}Nouveau{% endif %}</span>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-xl-9">
+    <div class="page-header">
+      <h1>{% if form.instance.pk %}Modifier le conducteur{% else %}Nouveau conducteur{% endif %}</h1>
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+      {% if form.errors %}
+        <div class="alert alert-danger mb-3">
+          <i class="bi bi-exclamation-triangle me-2"></i>Veuillez corriger les erreurs.
+        </div>
+      {% endif %}
+
+      <!-- Identité -->
+      <div class="card mb-4">
+        <div class="card-header">Identité</div>
+        <div class="card-body p-4">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">Prénom *</label>
+              {{ form.first_name }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Nom *</label>
+              {{ form.last_name }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Matricule</label>
+              {{ form.employee_id }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Téléphone</label>
+              {{ form.phone }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Email</label>
+              {{ form.email }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Compte utilisateur</label>
+              {{ form.user }}
+            </div>
+            <div class="col-12 d-flex align-items-center gap-2 pt-2">
+              {{ form.is_active }}
+              <label class="form-check-label">Conducteur actif</label>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Permis -->
+      <div class="card mb-4">
+        <div class="card-header">Permis de conduire</div>
+        <div class="card-body p-4">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">Numéro de permis</label>
+              {{ form.license_number }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Catégorie</label>
+              {{ form.license_category }}
+              <div class="form-text">Ex : B, C, D, CE</div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Date d'expiration</label>
+              {{ form.license_expiry }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="d-flex gap-2 justify-content-end">
+        <a href="{% url 'people:driver-list' %}" class="btn btn-outline-secondary">
+          <i class="bi bi-x-lg me-1"></i>Annuler
+        </a>
+        <button type="submit" class="btn btn-primary">
+          <i class="bi bi-check-lg me-1"></i>
+          {% if form.instance.pk %}Enregistrer{% else %}Créer le conducteur{% endif %}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.querySelectorAll('input:not([type=checkbox]), select, textarea').forEach(el => {
+    if (el.tagName === 'SELECT') el.classList.add('form-select');
+    else el.classList.add('form-control');
+  });
+</script>
+{% endblock %}

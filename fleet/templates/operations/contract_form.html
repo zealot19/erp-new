@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+{% block title %}{% if form.instance.pk %}Modifier le contrat{% else %}Nouveau contrat{% endif %}{% endblock %}
+{% block nav_contracts %}active{% endblock %}
+
+{% block breadcrumb %}
+  Opérations / <a href="{% url 'operations:contract-list' %}">Contrats</a> /
+  <span class="bc-current">{% if view.kwargs.pk %}Modifier{% else %}Nouveau{% endif %}</span>
+{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-xl-10">
+    <div class="page-header">
+      <h1>{% if view.kwargs.pk %}Modifier le contrat{% else %}Nouveau contrat{% endif %}</h1>
+    </div>
+
+    <form method="post">
+      {% csrf_token %}
+      {% if form.errors %}
+        <div class="alert alert-danger mb-3">
+          <i class="bi bi-exclamation-triangle me-2"></i>Veuillez corriger les erreurs ci-dessous.
+        </div>
+      {% endif %}
+
+      <!-- Identification -->
+      <div class="card mb-4">
+        <div class="card-header">Identification</div>
+        <div class="card-body p-4">
+          <div class="row g-3">
+            <div class="col-md-6">
+              <label class="form-label">Nom du contrat *</label>
+              {{ form.name }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Référence externe</label>
+              {{ form.reference }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Type d'intervention *</label>
+              {{ form.intervention_type }}
+            </div>
+            <div class="col-md-6">
+              <label class="form-label">Services inclus</label>
+              {{ form.included_services }}
+              <div class="form-text">Maintenez Ctrl pour sélectionner plusieurs types.</div>
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Statut</label>
+              {{ form.status }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Parties -->
+      <div class="card mb-4">
+        <div class="card-header">Parties prenantes</div>
+        <div class="card-body p-4">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">Véhicule *</label>
+              {{ form.vehicle }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Fournisseur</label>
+              {{ form.supplier }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Conducteur</label>
+              {{ form.driver }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Responsable interne</label>
+              {{ form.responsible }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dates -->
+      <div class="card mb-4">
+        <div class="card-header">Dates</div>
+        <div class="card-body p-4">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">Date de début *</label>
+              {{ form.start_date }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Date de fin *</label>
+              {{ form.end_date }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Date de signature</label>
+              {{ form.creation_date }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Finance -->
+      <div class="card mb-4">
+        <div class="card-header">Finance</div>
+        <div class="card-body p-4">
+          <div class="row g-3">
+            <div class="col-md-4">
+              <label class="form-label">Coût d'activation</label>
+              {{ form.activation_cost }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Période de facturation</label>
+              {{ form.billing_period }}
+            </div>
+            <div class="col-md-4">
+              <label class="form-label">Devise</label>
+              {{ form.currency }}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Terms -->
+      <div class="card mb-4">
+        <div class="card-header">Conditions générales</div>
+        <div class="card-body p-4">
+          {{ form.terms }}
+        </div>
+      </div>
+
+      <div class="d-flex gap-2 justify-content-end">
+        <a href="{% url 'operations:contract-list' %}" class="btn btn-outline-secondary">
+          <i class="bi bi-x-lg me-1"></i>Annuler
+        </a>
+        <button type="submit" class="btn btn-primary">
+          <i class="bi bi-check-lg me-1"></i>
+          {% if form.instance.pk %}Enregistrer{% else %}Créer le contrat{% endif %}
+        </button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  document.querySelectorAll('input:not([type=checkbox]), select, textarea').forEach(el => {
+    if (el.tagName === 'SELECT') el.classList.add('form-select');
+    else el.classList.add('form-control');
+  });
+</script>
+{% endblock %}

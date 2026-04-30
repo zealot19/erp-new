@@ -1,0 +1,29 @@
+{% extends 'base.html' %}
+{% block title %}Types d'intervention{% endblock %}
+{% block nav_intervention_types %}active{% endblock %}
+{% block breadcrumb %}Configuration / <span class="bc-current">Types d'intervention</span>{% endblock %}
+{% block topbar_actions %}<a href="{% url 'configuration:intervention-type-create' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i>Nouveau</a>{% endblock %}
+{% block content %}
+<div class="page-header"><h1><i class="bi bi-tools me-2 text-primary"></i>Types d'intervention</h1></div>
+<div class="card">
+  {% if intervention_types %}
+  <div class="table-responsive">
+    <table class="table table-fleet mb-0">
+      <thead><tr><th>Nom</th><th>Catégorie</th><th class="text-end">Actions</th></tr></thead>
+      <tbody>{% for obj in intervention_types %}<tr>
+        <td class="fw-600">{{ obj.name }}</td>
+        <td>
+          {% if obj.category == 'CONTRACT' %}<span class="badge-state badge-new">Contrat</span>
+          {% elif obj.category == 'SERVICE' %}<span class="badge-state badge-progress">Service</span>
+          {% else %}<span class="badge-state badge-inactive">Contrat & Service</span>{% endif %}
+        </td>
+        <td class="text-end">
+          <a href="{% url 'configuration:intervention-type-update' obj.pk %}" class="btn btn-sm btn-outline-primary py-0 px-2"><i class="bi bi-pencil"></i></a>
+          <a href="{% url 'configuration:intervention-type-delete' obj.pk %}" class="btn btn-sm btn-outline-danger py-0 px-2"><i class="bi bi-trash"></i></a>
+        </td>
+      </tr>{% endfor %}</tbody>
+    </table>
+  </div>
+  {% else %}<div class="empty-state"><i class="bi bi-tools"></i><p>Aucun type d'intervention.</p></div>{% endif %}
+</div>
+{% endblock %}

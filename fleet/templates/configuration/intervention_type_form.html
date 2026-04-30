@@ -1,0 +1,11 @@
+{% extends 'configuration/_config_form_base.html' %}
+{% block nav_intervention_types %}active{% endblock %}
+{% block form_title %}Type d'intervention{% endblock %}
+{% block list_url %}{% url 'configuration:intervention-type-list' %}{% endblock %}
+{% block list_label %}Types d'intervention{% endblock %}
+{% block form_heading %}{% if view.kwargs.pk %}Modifier{% else %}Nouveau type d'intervention{% endif %}{% endblock %}
+{% block form_fields %}
+  <div class="col-md-8"><label class="form-label">Nom *</label>{{ form.name }}</div>
+  <div class="col-md-4"><label class="form-label">Catégorie *</label>{{ form.category }}</div>
+{% endblock %}
+{% block cancel_url %}{% url 'configuration:intervention-type-list' %}{% endblock %}

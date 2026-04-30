@@ -1,0 +1,110 @@
+{% extends 'base.html' %}
+{% block title %}Fournisseurs{% endblock %}
+{% block nav_suppliers %}active{% endblock %}
+
+{% block breadcrumb %}
+  Personnes / <span class="bc-current">Fournisseurs</span>
+{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'people:supplier-create' %}" class="btn btn-primary btn-sm">
+    <i class="bi bi-plus-lg me-1"></i>Nouveau fournisseur
+  </a>
+{% endblock %}
+
+{% block content %}
+<div class="page-header"><h1>Fournisseurs</h1></div>
+
+<div class="card mb-3">
+  <div class="card-body py-2 px-3 d-flex gap-2 flex-wrap align-items-center">
+    <form method="get" class="d-flex gap-2 flex-grow-1" style="max-width:360px;">
+      <div class="input-group input-group-sm">
+        <span class="input-group-text bg-white border-end-0">
+          <i class="bi bi-search text-muted"></i>
+        </span>
+        <input type="text" name="q" value="{{ request.GET.q }}"
+               class="form-control border-start-0 ps-0"
+               placeholder="Nom, code, ville…">
+      </div>
+      <button type="submit" class="btn btn-primary btn-sm">OK</button>
+    </form>
+    <div class="ms-auto">
+      <select class="form-select form-select-sm" style="width:auto;"
+              onchange="window.location.href='?active='+this.value">
+        <option value="">Tous</option>
+        <option value="1" {% if request.GET.active == '1' %}selected{% endif %}>Actifs</option>
+        <option value="0" {% if request.GET.active == '0' %}selected{% endif %}>Inactifs</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  {% if suppliers %}
+  <div class="table-responsive">
+    <table class="table table-fleet mb-0">
+      <thead>
+        <tr>
+          <th>Code</th>
+          <th>Nom</th>
+          <th>Ville</th>
+          <th>Pays</th>
+          <th>Téléphone</th>
+          <th>Contact</th>
+          <th>Statut</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in suppliers %}
+        <tr>
+          <td class="font-mono fw-600 small">{{ s.code }}</td>
+          <td>
+            <a href="{% url 'people:supplier-detail' s.pk %}" class="fw-600 text-decoration-none">
+              {{ s.name }}
+            </a>
+            {% if s.tax_id %}
+              <div class="text-muted" style="font-size:11px;">NIU: {{ s.tax_id }}</div>
+            {% endif %}
+          </td>
+          <td>{{ s.city|default:"—" }}</td>
+          <td>{{ s.country }}</td>
+          <td>{{ s.phone|default:"—" }}</td>
+          <td>{{ s.contact_person|default:"—" }}</td>
+          <td>
+            {% if s.is_active %}
+              <span class="badge-state badge-done">Actif</span>
+            {% else %}
+              <span class="badge-state badge-inactive">Inactif</span>
+            {% endif %}
+          </td>
+          <td class="text-end">
+            <a href="{% url 'people:supplier-detail' s.pk %}"
+               class="btn btn-sm btn-outline-secondary py-0 px-2">
+              <i class="bi bi-eye"></i>
+            </a>
+            <a href="{% url 'people:supplier-update' s.pk %}"
+               class="btn btn-sm btn-outline-primary py-0 px-2">
+              <i class="bi bi-pencil"></i>
+            </a>
+            <a href="{% url 'people:supplier-delete' s.pk %}"
+               class="btn btn-sm btn-outline-danger py-0 px-2">
+              <i class="bi bi-trash"></i>
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <i class="bi bi-building"></i>
+    <p>Aucun fournisseur enregistré.</p>
+    <a href="{% url 'people:supplier-create' %}" class="btn btn-primary btn-sm mt-3">
+      <i class="bi bi-plus-lg me-1"></i>Ajouter un fournisseur
+    </a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

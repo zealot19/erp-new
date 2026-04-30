@@ -1,0 +1,66 @@
+{% extends 'base.html' %}
+{% block title %}{{ parking.name }}{% endblock %}
+{% block nav_parkings %}active{% endblock %}
+{% block breadcrumb %}
+  Flotte / <a href="{% url 'vehicles:parking-list' %}">Parkings</a> / <span class="bc-current">{{ parking.name }}</span>
+{% endblock %}
+{% block topbar_actions %}
+  <a href="{% url 'vehicles:parking-update' parking.pk %}" class="btn btn-primary btn-sm"><i class="bi bi-pencil me-1"></i>Modifier</a>
+{% endblock %}
+{% block content %}
+<div class="page-header"><h1>{{ parking.name }}</h1></div>
+
+<div class="row g-4">
+  <div class="col-md-4">
+    <div class="card h-100">
+      <div class="card-header">Informations</div>
+      <div class="card-body p-4">
+        <div class="info-item mb-3">
+          <div class="info-label">Localisation</div>
+          <div class="info-value">{{ parking.location|default:"—" }}</div>
+        </div>
+        <div class="info-item mb-3">
+          <div class="info-label">Véhicules actuels</div>
+          <div class="info-value">{{ vehicles.count }}</div>
+        </div>
+        {% if parking.notes %}
+        <div class="info-item">
+          <div class="info-label">Notes</div>
+          <div class="info-value" style="font-size:13.5px;">{{ parking.notes }}</div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+  <div class="col-md-8">
+    <div class="card">
+      <div class="card-header">Véhicules garés ici</div>
+      {% if vehicles %}
+      <div class="table-responsive">
+        <table class="table table-fleet mb-0">
+          <thead>
+            <tr><th>Immatriculation</th><th>Modèle</th><th>Conducteur</th><th>État</th><th></th></tr>
+          </thead>
+          <tbody>
+            {% for v in vehicles %}
+            <tr>
+              <td class="fw-600 font-mono"><a href="{% url 'vehicles:vehicle-detail' v.pk %}">{{ v.license_plate }}</a></td>
+              <td>{{ v.vehicle_model.manufacturer.name }} {{ v.vehicle_model.name }}</td>
+              <td>{{ v.driver.full_name|default:"—" }}</td>
+              <td>
+                {% if v.state == 'REGISTERED' %}<span class="badge-state badge-done">Immatriculé</span>
+                {% else %}<span class="badge-state badge-inactive">{{ v.get_state_display }}</span>{% endif %}
+              </td>
+              <td><a href="{% url 'vehicles:vehicle-detail' v.pk %}" class="btn btn-sm btn-outline-secondary py-0 px-2"><i class="bi bi-eye"></i></a></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state"><i class="bi bi-car-front"></i><p>Aucun véhicule dans ce parking.</p></div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

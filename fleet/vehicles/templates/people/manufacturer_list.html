@@ -1,0 +1,61 @@
+{% extends 'base.html' %}
+{% block title %}Fabricants{% endblock %}
+{% block nav_manufacturers %}active{% endblock %}
+{% block breadcrumb %}Personnes / <span class="bc-current">Fabricants</span>{% endblock %}
+{% block topbar_actions %}
+  <a href="{% url 'people:manufacturer-create' %}" class="btn btn-primary btn-sm">
+    <i class="bi bi-plus-lg me-1"></i>Nouveau fabricant
+  </a>
+{% endblock %}
+{% block content %}
+<div class="page-header"><h1>Fabricants</h1></div>
+<div class="card">
+  {% if manufacturers %}
+  <div class="table-responsive">
+    <table class="table table-fleet mb-0">
+      <thead>
+        <tr>
+          <th>Logo</th>
+          <th>Nom</th>
+          <th>Pays d'origine</th>
+          <th>Modèles</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in manufacturers %}
+        <tr>
+          <td style="width:52px;">
+            {% if m.logo %}
+              <img src="{{ m.logo.url }}" alt="{{ m.name }}"
+                   style="width:40px;height:40px;object-fit:contain;border-radius:6px;background:#f4f6fb;padding:4px;">
+            {% else %}
+              <div style="width:40px;height:40px;background:var(--primary-light);border-radius:6px;
+                          display:flex;align-items:center;justify-content:center;">
+                <i class="bi bi-factory text-primary" style="font-size:18px;"></i>
+              </div>
+            {% endif %}
+          </td>
+          <td class="fw-600">{{ m.name }}</td>
+          <td>{{ m.country|default:"—" }}</td>
+          <td>
+            <span class="badge-state badge-new">{{ m.vehicle_models.count }} modèle(s)</span>
+          </td>
+          <td class="text-end">
+            <a href="{% url 'people:manufacturer-update' m.pk %}" class="btn btn-sm btn-outline-primary py-0 px-2"><i class="bi bi-pencil"></i></a>
+            <a href="{% url 'people:manufacturer-delete' m.pk %}" class="btn btn-sm btn-outline-danger py-0 px-2"><i class="bi bi-trash"></i></a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <i class="bi bi-factory"></i>
+    <p>Aucun fabricant enregistré.</p>
+    <a href="{% url 'people:manufacturer-create' %}" class="btn btn-primary btn-sm mt-3"><i class="bi bi-plus-lg me-1"></i>Ajouter</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,23 @@
+{% extends 'base.html' %}
+{% block title %}Transmissions{% endblock %}
+{% block breadcrumb %}Configuration / <span class="bc-current">Transmissions</span>{% endblock %}
+{% block topbar_actions %}<a href="{% url 'configuration:transmission-create' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i>Nouvelle</a>{% endblock %}
+{% block content %}
+<div class="page-header"><h1><i class="bi bi-gear me-2 text-primary"></i>Transmissions</h1></div>
+<div class="card">
+  {% if transmissions %}
+  <div class="table-responsive">
+    <table class="table table-fleet mb-0">
+      <thead><tr><th>Nom</th><th class="text-end">Actions</th></tr></thead>
+      <tbody>{% for obj in transmissions %}<tr>
+        <td class="fw-600">{{ obj.name }}</td>
+        <td class="text-end">
+          <a href="{% url 'configuration:transmission-update' obj.pk %}" class="btn btn-sm btn-outline-primary py-0 px-2"><i class="bi bi-pencil"></i></a>
+          <a href="{% url 'configuration:transmission-delete' obj.pk %}" class="btn btn-sm btn-outline-danger py-0 px-2"><i class="bi bi-trash"></i></a>
+        </td>
+      </tr>{% endfor %}</tbody>
+    </table>
+  </div>
+  {% else %}<div class="empty-state"><i class="bi bi-gear"></i><p>Aucune transmission.</p></div>{% endif %}
+</div>
+{% endblock %}

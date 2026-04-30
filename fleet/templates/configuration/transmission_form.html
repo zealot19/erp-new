@@ -1,0 +1,7 @@
+{% extends 'configuration/_config_form_base.html' %}
+{% block form_title %}Transmission{% endblock %}
+{% block list_url %}{% url 'configuration:transmission-list' %}{% endblock %}
+{% block list_label %}Transmissions{% endblock %}
+{% block form_heading %}{% if view.kwargs.pk %}Modifier{% else %}Nouvelle transmission{% endif %}{% endblock %}
+{% block form_fields %}<div class="col-12"><label class="form-label">Nom *</label>{{ form.name }}</div>{% endblock %}
+{% block cancel_url %}{% url 'configuration:transmission-list' %}{% endblock %}

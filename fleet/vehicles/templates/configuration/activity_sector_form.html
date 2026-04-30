@@ -1,0 +1,10 @@
+{% extends 'configuration/_config_form_base.html' %}
+{% block form_title %}Secteur d'activité{% endblock %}
+{% block list_url %}{% url 'configuration:activity-sector-list' %}{% endblock %}
+{% block list_label %}Secteurs d'activité{% endblock %}
+{% block form_heading %}{% if form.instance.pk %}Modifier{% else %}Nouveau secteur d'activité{% endif %}{% endblock %}
+{% block form_fields %}
+  <div class="col-md-4"><label class="form-label">Code *</label>{{ form.code }}</div>
+  <div class="col-md-8"><label class="form-label">Nom *</label>{{ form.name }}</div>
+{% endblock %}
+{% block cancel_url %}{% url 'configuration:activity-sector-list' %}{% endblock %}

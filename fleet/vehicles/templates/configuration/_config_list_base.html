@@ -1,0 +1,60 @@
+{% extends 'base.html' %}
+
+{# ─────────────────────────────────────────────────────
+   Reusable configuration list.
+   Child templates override these blocks:
+     config_title     — page title (string)
+     config_nav       — sidebar nav block name
+     config_icon      — bootstrap icon class  e.g. bi-tags
+     config_create_url — {% url '...' %}
+     config_create_label
+     table_headers    — <th> elements
+     table_rows       — {% for item in object_list %}<tr>…</tr>{% endfor %}
+   ───────────────────────────────────────────────────── #}
+
+{% block title %}{% block config_title %}Configuration{% endblock %}{% endblock %}
+
+{% block breadcrumb %}
+  Configuration / <span class="bc-current">{% block config_title_bc %}{% block config_title2 %}{% endblock %}{% endblock %}</span>
+{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% block config_create_url %}#{% endblock %}" class="btn btn-primary btn-sm">
+    <i class="bi bi-plus-lg me-1"></i>{% block config_create_label %}Nouveau{% endblock %}
+  </a>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>
+    <i class="bi {% block config_icon %}bi-gear{% endblock %} me-2 text-primary"></i>
+    {% block config_heading %}{% endblock %}
+  </h1>
+</div>
+
+<div class="card">
+  {% if object_list %}
+  <div class="table-responsive">
+    <table class="table table-fleet mb-0">
+      <thead>
+        <tr>
+          {% block table_headers %}{% endblock %}
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% block table_rows %}{% endblock %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <i class="bi {% block config_empty_icon %}bi-inbox{% endblock %}"></i>
+    <p>Aucun élément enregistré.</p>
+    <a href="{% block config_create_url2 %}#{% endblock %}" class="btn btn-primary btn-sm mt-3">
+      <i class="bi bi-plus-lg me-1"></i>{% block config_create_label2 %}Ajouter{% endblock %}
+    </a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

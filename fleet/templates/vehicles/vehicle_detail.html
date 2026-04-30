@@ -1,0 +1,553 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ vehicle.license_plate }}{% endblock %}
+{% block nav_vehicles %}active{% endblock %}
+
+{% block breadcrumb %}
+  Flotte /
+  <a href="{% url 'vehicles:vehicle-list' %}">Véhicules</a> /
+  <span class="bc-current">{{ vehicle.license_plate }}</span>
+{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'vehicles:vehicle-update' vehicle.pk %}" class="btn btn-primary btn-sm">
+    <i class="bi bi-pencil me-1"></i> Modifier
+  </a>
+  <a href="{% url 'vehicles:vehicle-delete' vehicle.pk %}" class="btn btn-outline-danger btn-sm">
+    <i class="bi bi-trash me-1"></i>
+  </a>
+{% endblock %}
+
+{% block content %}
+
+<!-- Header card -->
+<div class="card mb-4">
+  <div class="card-body p-4">
+    <div class="d-flex align-items-start gap-4 flex-wrap">
+      <!-- Vehicle icon -->
+      <div style="width:72px;height:72px;background:var(--primary-light);border-radius:14px;
+                  display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <i class="bi bi-car-front-fill" style="font-size:32px;color:var(--primary);"></i>
+      </div>
+
+      <div class="flex-grow-1">
+        <div class="d-flex align-items-center gap-3 flex-wrap mb-1">
+          <h2 class="mb-0 font-mono" style="font-size:22px;font-weight:700;color:var(--primary);">
+            {{ vehicle.license_plate }}
+          </h2>
+          {% if vehicle.state == 'REGISTERED' %}
+            <span class="badge-state badge-done">Immatriculé</span>
+          {% elif vehicle.state == 'NEW_REQUEST' %}
+            <span class="badge-state badge-new">Nouvelle demande</span>
+          {% elif vehicle.state == 'TO_ORDER' %}
+            <span class="badge-state badge-progress">À commander</span>
+          {% elif vehicle.state == 'DECOMMISSIONED' %}
+            <span class="badge-state badge-cancelled">Déclassé</span>
+          {% endif %}
+          {% for tag in vehicle.tags.all %}
+            <span class="tag-pill" {% if tag.color %}style="background:{{ tag.color }}22;color:{{ tag.color }};"{% endif %}>
+              {{ tag.name }}
+            </span>
+          {% endfor %}
+        </div>
+        <div class="text-muted mb-2" style="font-size:14px;">
+          {{ vehicle.vehicle_model.manufacturer.name }} {{ vehicle.vehicle_model.name }}
+          ({{ vehicle.vehicle_model.model_year }}) · {{ vehicle.category.name }}
+        </div>
+        <div class="d-flex gap-4 flex-wrap" style="font-size:13px;">
+          {% if vehicle.driver %}
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-person-badge text-muted"></i>
+            <a href="{% url 'people:driver-detail' vehicle.driver.pk %}">{{ vehicle.driver.full_name }}</a>
+          </div>
+          {% endif %}
+          {% if vehicle.parking %}
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-p-square text-muted"></i>
+            <span>{{ vehicle.parking.name }}</span>
+          </div>
+          {% endif %}
+          {% if vehicle.vin %}
+          <div class="d-flex align-items-center gap-2">
+            <i class="bi bi-upc text-muted"></i>
+            <span class="font-mono text-muted" style="font-size:12px;">{{ vehicle.vin }}</span>
+          </div>
+          {% endif %}
+        </div>
+      </div>
+
+      <!-- Quick actions -->
+      <div class="d-flex flex-column gap-2">
+        <a href="{% url 'vehicles:odometer-create' vehicle.pk %}" class="btn btn-outline-primary btn-sm">
+          <i class="bi bi-speedometer2 me-1"></i>Relevé km
+        </a>
+        <a href="{% url 'vehicles:vehicle-document-create' vehicle.pk %}" class="btn btn-outline-secondary btn-sm">
+          <i class="bi bi-file-earmark-plus me-1"></i>Document
+        </a>
+        <a href="{% url 'vehicles:vehicle-layout-create' vehicle.pk %}" class="btn btn-outline-secondary btn-sm">
+          <i class="bi bi-grid me-1"></i>Disposition
+        </a>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tabs -->
+<ul class="nav nav-tabs-fleet mb-0" id="vehicleTabs">
+  <li class="nav-item">
+    <button class="nav-link active" data-bs-toggle="tab" data-bs-target="#tab-info">
+      <i class="bi bi-info-circle me-1"></i>Informations
+    </button>
+  </li>
+  <li class="nav-item">
+    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-documents">
+      <i class="bi bi-file-earmark me-1"></i>Documents
+      <span class="badge bg-secondary ms-1" style="font-size:10px;">{{ documents.count }}</span>
+    </button>
+  </li>
+  <li class="nav-item">
+    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-contracts">
+      <i class="bi bi-file-earmark-text me-1"></i>Contrats
+    </button>
+  </li>
+  <li class="nav-item">
+    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-services">
+      <i class="bi bi-wrench me-1"></i>Services
+    </button>
+  </li>
+  <li class="nav-item">
+    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-odometer">
+      <i class="bi bi-speedometer2 me-1"></i>Kilométrage
+    </button>
+  </li>
+  <li class="nav-item">
+    <button class="nav-link" data-bs-toggle="tab" data-bs-target="#tab-layouts">
+      <i class="bi bi-grid me-1"></i>Dispositions
+    </button>
+  </li>
+</ul>
+
+<div class="tab-content">
+
+  <!-- ── INFO TAB ── -->
+  <div class="tab-pane fade show active" id="tab-info">
+    <div class="card" style="border-top-left-radius:0;border-top-right-radius:0;border-top:none;">
+      <div class="card-body p-4">
+
+        <div class="form-section-title mt-0">Identification</div>
+        <div class="info-grid mb-4">
+          <div class="info-item">
+            <div class="info-label">Immatriculation</div>
+            <div class="info-value font-mono">{{ vehicle.license_plate }}</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">VIN / Châssis</div>
+            <div class="info-value font-mono">{{ vehicle.vin|default:"—" }}</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Catégorie</div>
+            <div class="info-value">{{ vehicle.category.name }}</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">État</div>
+            <div class="info-value">{{ vehicle.get_state_display }}</div>
+          </div>
+        </div>
+
+        <div class="form-section-title">Modèle & Motorisation</div>
+        <div class="info-grid mb-4">
+          <div class="info-item">
+            <div class="info-label">Fabricant</div>
+            <div class="info-value">{{ vehicle.vehicle_model.manufacturer.name }}</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Modèle</div>
+            <div class="info-value">{{ vehicle.vehicle_model.name }}</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Année</div>
+            <div class="info-value">{{ vehicle.vehicle_model.model_year }}</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Carburant</div>
+            <div class="info-value">{{ vehicle.vehicle_model.fuel_type.name|default:"—" }}</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Transmission</div>
+            <div class="info-value">{{ vehicle.vehicle_model.transmission.name|default:"—" }}</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Traction</div>
+            <div class="info-value">{{ vehicle.vehicle_model.traction_type.name|default:"—" }}</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Puissance</div>
+            <div class="info-value">
+              {% if vehicle.vehicle_model.power %}
+                {{ vehicle.vehicle_model.power }} {{ vehicle.vehicle_model.power_unit.code }}
+              {% else %}—{% endif %}
+            </div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Émissions CO2</div>
+            <div class="info-value">
+              {% if vehicle.vehicle_model.co2_emission %}
+                {{ vehicle.vehicle_model.co2_emission }} {{ vehicle.vehicle_model.emission_unit.code }}
+              {% else %}—{% endif %}
+            </div>
+          </div>
+        </div>
+
+        <div class="form-section-title">Affectation & Dates</div>
+        <div class="info-grid mb-4">
+          <div class="info-item">
+            <div class="info-label">Conducteur actuel</div>
+            <div class="info-value">
+              {% if vehicle.driver %}
+                <a href="{% url 'people:driver-detail' vehicle.driver.pk %}">{{ vehicle.driver.full_name }}</a>
+              {% else %}<span class="empty">Non assigné</span>{% endif %}
+            </div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Responsable flotte</div>
+            <div class="info-value">{{ vehicle.fleet_manager.get_full_name|default:"—" }}</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Parking</div>
+            <div class="info-value">{{ vehicle.parking.name|default:"—" }}</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Date commande</div>
+            <div class="info-value">{{ vehicle.order_date|date:"d/m/Y"|default:"—" }}</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Date immatriculation</div>
+            <div class="info-value">{{ vehicle.registration_date|date:"d/m/Y"|default:"—" }}</div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">1er contrat</div>
+            <div class="info-value">{{ vehicle.first_contract_date|date:"d/m/Y"|default:"—" }}</div>
+          </div>
+        </div>
+
+        <div class="form-section-title">Valeurs financières</div>
+        <div class="info-grid mb-4">
+          <div class="info-item">
+            <div class="info-label">Valeur catalogue TTC</div>
+            <div class="info-value">
+              {% if vehicle.catalog_value %}{{ vehicle.catalog_value|floatformat:0 }} XAF{% else %}—{% endif %}
+            </div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Valeur d'achat</div>
+            <div class="info-value">
+              {% if vehicle.purchase_value %}{{ vehicle.purchase_value|floatformat:0 }} XAF{% else %}—{% endif %}
+            </div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Valeur résiduelle</div>
+            <div class="info-value">
+              {% if vehicle.residual_value %}{{ vehicle.residual_value|floatformat:0 }} XAF{% else %}—{% endif %}
+            </div>
+          </div>
+          <div class="info-item">
+            <div class="info-label">Chevaux fiscaux</div>
+            <div class="info-value">{{ vehicle.fiscal_horsepower|default:"—" }}</div>
+          </div>
+        </div>
+
+        {% if vehicle.notes %}
+        <div class="form-section-title">Notes</div>
+        <p style="font-size:13.5px;color:var(--text);">{{ vehicle.notes }}</p>
+        {% endif %}
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ── DOCUMENTS TAB ── -->
+  <div class="tab-pane fade" id="tab-documents">
+    <div class="card" style="border-top-left-radius:0;border-top-right-radius:0;border-top:none;">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Documents administratifs</span>
+        <a href="{% url 'vehicles:vehicle-document-create' vehicle.pk %}" class="btn btn-sm btn-primary">
+          <i class="bi bi-plus-lg me-1"></i>Ajouter
+        </a>
+      </div>
+      {% if documents %}
+      <div class="table-responsive">
+        <table class="table table-fleet mb-0">
+          <thead>
+            <tr>
+              <th>Type</th>
+              <th>Référence</th>
+              <th>Émission</th>
+              <th>Expiration</th>
+              <th>Statut</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for doc in documents %}
+            <tr>
+              <td class="fw-500">{{ doc.document_type.label }}</td>
+              <td class="font-mono small">{{ doc.reference_number|default:"—" }}</td>
+              <td>{{ doc.issue_date|date:"d/m/Y"|default:"—" }}</td>
+              <td>
+                {% if doc.expiry_date %}
+                  {% if doc.is_expired %}
+                    <span class="text-danger fw-600">{{ doc.expiry_date|date:"d/m/Y" }}</span>
+                    <i class="bi bi-exclamation-triangle-fill text-danger ms-1"></i>
+                  {% else %}
+                    {{ doc.expiry_date|date:"d/m/Y" }}
+                  {% endif %}
+                {% else %}—{% endif %}
+              </td>
+              <td>
+                {% if doc.status == 'ACTIVE' %}
+                  <span class="badge-state badge-active">Actif</span>
+                {% else %}
+                  <span class="badge-state badge-inactive">Inactif</span>
+                {% endif %}
+              </td>
+              <td class="text-end">
+                {% if doc.file %}
+                <a href="{{ doc.file.url }}" class="btn btn-sm btn-outline-secondary py-0 px-2" target="_blank">
+                  <i class="bi bi-download"></i>
+                </a>
+                {% endif %}
+                <a href="{% url 'vehicles:vehicle-document-update' doc.pk %}" class="btn btn-sm btn-outline-primary py-0 px-2">
+                  <i class="bi bi-pencil"></i>
+                </a>
+                <a href="{% url 'vehicles:vehicle-document-delete' doc.pk %}" class="btn btn-sm btn-outline-danger py-0 px-2">
+                  <i class="bi bi-trash"></i>
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <i class="bi bi-file-earmark"></i>
+        <p>Aucun document enregistré.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ── CONTRACTS TAB ── -->
+  <div class="tab-pane fade" id="tab-contracts">
+    <div class="card" style="border-top-left-radius:0;border-top-right-radius:0;border-top:none;">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Contrats liés</span>
+        <a href="{% url 'operations:contract-create' %}" class="btn btn-sm btn-primary">
+          <i class="bi bi-plus-lg me-1"></i>Nouveau contrat
+        </a>
+      </div>
+      {% if vehicle.contracts.all %}
+      <div class="table-responsive">
+        <table class="table table-fleet mb-0">
+          <thead>
+            <tr>
+              <th>Nom</th>
+              <th>Type</th>
+              <th>Début</th>
+              <th>Fin</th>
+              <th>Statut</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for contract in vehicle.contracts.all %}
+            <tr>
+              <td class="fw-500">{{ contract.name }}</td>
+              <td>{{ contract.intervention_type.name }}</td>
+              <td>{{ contract.start_date|date:"d/m/Y" }}</td>
+              <td>
+                {% if contract.is_expired %}
+                  <span class="text-danger">{{ contract.end_date|date:"d/m/Y" }}</span>
+                {% else %}
+                  {{ contract.end_date|date:"d/m/Y" }}
+                {% endif %}
+              </td>
+              <td>
+                {% if contract.status == 'ACTIVE' %}<span class="badge-state badge-done">Actif</span>
+                {% elif contract.status == 'DRAFT' %}<span class="badge-state badge-draft">Brouillon</span>
+                {% elif contract.status == 'EXPIRED' %}<span class="badge-state badge-expired">Expiré</span>
+                {% elif contract.status == 'CANCELLED' %}<span class="badge-state badge-cancelled">Annulé</span>
+                {% endif %}
+              </td>
+              <td class="text-end">
+                <a href="{% url 'operations:contract-detail' contract.pk %}" class="btn btn-sm btn-outline-secondary py-0 px-2">
+                  <i class="bi bi-eye"></i>
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <i class="bi bi-file-earmark-text"></i>
+        <p>Aucun contrat lié à ce véhicule.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ── SERVICES TAB ── -->
+  <div class="tab-pane fade" id="tab-services">
+    <div class="card" style="border-top-left-radius:0;border-top-right-radius:0;border-top:none;">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Historique des services</span>
+        <a href="{% url 'operations:service-create' %}" class="btn btn-sm btn-primary">
+          <i class="bi bi-plus-lg me-1"></i>Nouveau service
+        </a>
+      </div>
+      {% if vehicle.services.all %}
+      <div class="table-responsive">
+        <table class="table table-fleet mb-0">
+          <thead>
+            <tr>
+              <th>Description</th>
+              <th>Type</th>
+              <th>Date</th>
+              <th>Coût</th>
+              <th>Statut</th>
+              <th></th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for svc in vehicle.services.all %}
+            <tr>
+              <td class="fw-500">{{ svc.description }}</td>
+              <td>{{ svc.intervention_type.name }}</td>
+              <td>{{ svc.date|date:"d/m/Y" }}</td>
+              <td class="font-mono">{{ svc.cost|floatformat:0 }} {{ svc.currency }}</td>
+              <td>
+                {% if svc.status == 'NEW' %}<span class="badge-state badge-new">Nouveau</span>
+                {% elif svc.status == 'IN_PROGRESS' %}<span class="badge-state badge-progress">En cours</span>
+                {% elif svc.status == 'DONE' %}<span class="badge-state badge-done">Terminé</span>
+                {% elif svc.status == 'CANCELLED' %}<span class="badge-state badge-cancelled">Annulé</span>
+                {% endif %}
+              </td>
+              <td class="text-end">
+                <a href="{% url 'operations:service-detail' svc.pk %}" class="btn btn-sm btn-outline-secondary py-0 px-2">
+                  <i class="bi bi-eye"></i>
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <i class="bi bi-wrench"></i>
+        <p>Aucun service enregistré pour ce véhicule.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ── ODOMETER TAB ── -->
+  <div class="tab-pane fade" id="tab-odometer">
+    <div class="card" style="border-top-left-radius:0;border-top-right-radius:0;border-top:none;">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Relevés kilométriques</span>
+        <a href="{% url 'vehicles:odometer-create' vehicle.pk %}" class="btn btn-sm btn-primary">
+          <i class="bi bi-plus-lg me-1"></i>Nouveau relevé
+        </a>
+      </div>
+      {% if odometer_readings %}
+      <div class="table-responsive">
+        <table class="table table-fleet mb-0">
+          <thead>
+            <tr>
+              <th>Date</th>
+              <th>Valeur</th>
+              <th>Unité</th>
+              <th>Notes</th>
+              <th class="text-end">Actions</th>
+            </tr>
+          </thead>
+          <tbody>
+            {% for reading in odometer_readings %}
+            <tr>
+              <td>{{ reading.date|date:"d/m/Y" }}</td>
+              <td class="fw-600 font-mono">{{ reading.value|floatformat:0 }}</td>
+              <td>{{ reading.unit.code }}</td>
+              <td class="text-muted small">{{ reading.notes|default:"—" }}</td>
+              <td class="text-end">
+                <a href="{% url 'vehicles:odometer-update' reading.pk %}" class="btn btn-sm btn-outline-primary py-0 px-2">
+                  <i class="bi bi-pencil"></i>
+                </a>
+                <a href="{% url 'vehicles:odometer-delete' reading.pk %}" class="btn btn-sm btn-outline-danger py-0 px-2">
+                  <i class="bi bi-trash"></i>
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <i class="bi bi-speedometer2"></i>
+        <p>Aucun relevé kilométrique enregistré.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <!-- ── LAYOUTS TAB ── -->
+  <div class="tab-pane fade" id="tab-layouts">
+    <div class="card" style="border-top-left-radius:0;border-top-right-radius:0;border-top:none;">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Dispositions de sièges</span>
+        <a href="{% url 'vehicles:vehicle-layout-create' vehicle.pk %}" class="btn btn-sm btn-primary">
+          <i class="bi bi-plus-lg me-1"></i>Nouvelle disposition
+        </a>
+      </div>
+      {% if layouts %}
+      <div class="p-3 d-flex flex-wrap gap-3">
+        {% for layout in layouts %}
+        <div class="card" style="width:240px; {% if layout.is_active %}border-color:var(--primary);{% endif %}">
+          <div class="card-body p-3">
+            <div class="d-flex justify-content-between align-items-start mb-2">
+              <div class="fw-600">{{ layout.name }}</div>
+              {% if layout.is_active %}
+                <span class="badge-state badge-done">Active</span>
+              {% else %}
+                <span class="badge-state badge-inactive">Inactive</span>
+              {% endif %}
+            </div>
+            <div class="text-muted small mb-3">
+              <i class="bi bi-grid me-1"></i>{{ layout.total_seats }} sièges
+            </div>
+            <div class="d-flex gap-2">
+              <a href="{% url 'vehicles:vehicle-layout-detail' layout.pk %}" class="btn btn-sm btn-outline-primary flex-fill">
+                <i class="bi bi-eye me-1"></i>Voir
+              </a>
+              <a href="{% url 'vehicles:vehicle-layout-update' layout.pk %}" class="btn btn-sm btn-outline-secondary">
+                <i class="bi bi-pencil"></i>
+              </a>
+            </div>
+          </div>
+        </div>
+        {% endfor %}
+      </div>
+      {% else %}
+      <div class="empty-state">
+        <i class="bi bi-grid"></i>
+        <p>Aucune disposition de sièges définie.</p>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+
+</div><!-- /.tab-content -->
+{% endblock %}

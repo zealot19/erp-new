@@ -1,0 +1,99 @@
+{% extends 'base.html' %}
+{% block title %}Services{% endblock %}
+{% block nav_services %}active{% endblock %}
+{% block breadcrumb %}Opérations / <span class="bc-current">Services</span>{% endblock %}
+{% block topbar_actions %}
+  <a href="{% url 'operations:service-create' %}" class="btn btn-primary btn-sm">
+    <i class="bi bi-plus-lg me-1"></i>Nouveau service
+  </a>
+{% endblock %}
+{% block content %}
+
+<!-- Stats -->
+<div class="row g-3 mb-4">
+  {% for status, label, cls in statuses %}
+  <div class="col-sm-6 col-lg-3">
+    <div class="stat-card">
+      <div class="stat-label">{{ label }}</div>
+      <div class="stat-value">{{ counts|get_item:status|default:0 }}</div>
+    </div>
+  </div>
+  {% endfor %}
+</div>
+
+<!-- Filters -->
+<div class="card mb-3">
+  <div class="card-body py-2 px-3 d-flex flex-wrap align-items-center gap-2">
+    <form method="get" class="d-flex gap-2 flex-grow-1" style="max-width:360px;">
+      <div class="input-group input-group-sm">
+        <span class="input-group-text bg-white border-end-0"><i class="bi bi-search text-muted"></i></span>
+        <input type="text" name="q" value="{{ request.GET.q }}" class="form-control border-start-0 ps-0" placeholder="Véhicule, description…">
+      </div>
+      <button type="submit" class="btn btn-primary btn-sm">OK</button>
+    </form>
+    <div class="ms-auto d-flex gap-2">
+      <select class="form-select form-select-sm" style="width:auto;" onchange="window.location.href='?status='+this.value">
+        <option value="">Tous les statuts</option>
+        <option value="NEW" {% if request.GET.status == 'NEW' %}selected{% endif %}>Nouveau</option>
+        <option value="IN_PROGRESS" {% if request.GET.status == 'IN_PROGRESS' %}selected{% endif %}>En cours</option>
+        <option value="DONE" {% if request.GET.status == 'DONE' %}selected{% endif %}>Terminé</option>
+        <option value="CANCELLED" {% if request.GET.status == 'CANCELLED' %}selected{% endif %}>Annulé</option>
+      </select>
+    </div>
+  </div>
+</div>
+
+<div class="card">
+  {% if services %}
+  <div class="table-responsive">
+    <table class="table table-fleet mb-0">
+      <thead>
+        <tr>
+          <th>Véhicule</th>
+          <th>Description</th>
+          <th>Type</th>
+          <th>Date</th>
+          <th>Fournisseur</th>
+          <th>Coût</th>
+          <th>Statut</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for svc in services %}
+        <tr>
+          <td>
+            <a href="{% url 'vehicles:vehicle-detail' svc.vehicle.pk %}" class="fw-600 font-mono">
+              {{ svc.vehicle.license_plate }}
+            </a>
+          </td>
+          <td>{{ svc.description|truncatechars:50 }}</td>
+          <td><span class="badge-state badge-inactive">{{ svc.intervention_type.name }}</span></td>
+          <td>{{ svc.date|date:"d/m/Y" }}</td>
+          <td>{{ svc.supplier.name|default:"—" }}</td>
+          <td class="font-mono">{{ svc.cost|floatformat:0 }} {{ svc.currency }}</td>
+          <td>
+            {% if svc.status == 'NEW' %}<span class="badge-state badge-new">Nouveau</span>
+            {% elif svc.status == 'IN_PROGRESS' %}<span class="badge-state badge-progress">En cours</span>
+            {% elif svc.status == 'DONE' %}<span class="badge-state badge-done">Terminé</span>
+            {% elif svc.status == 'CANCELLED' %}<span class="badge-state badge-cancelled">Annulé</span>
+            {% endif %}
+          </td>
+          <td class="text-end">
+            <a href="{% url 'operations:service-detail' svc.pk %}" class="btn btn-sm btn-outline-secondary py-0 px-2"><i class="bi bi-eye"></i></a>
+            <a href="{% url 'operations:service-update' svc.pk %}" class="btn btn-sm btn-outline-primary py-0 px-2"><i class="bi bi-pencil"></i></a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <i class="bi bi-wrench-adjustable"></i>
+    <p>Aucun service enregistré.</p>
+    <a href="{% url 'operations:service-create' %}" class="btn btn-primary btn-sm mt-3"><i class="bi bi-plus-lg me-1"></i>Créer un service</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

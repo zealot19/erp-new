@@ -1,0 +1,166 @@
+{% extends 'base.html' %}
+{% block title %}{{ supplier.name }}{% endblock %}
+{% block nav_suppliers %}active{% endblock %}
+
+{% block breadcrumb %}
+  Personnes /
+  <a href="{% url 'people:supplier-list' %}">Fournisseurs</a> /
+  <span class="bc-current">{{ supplier.name }}</span>
+{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'people:supplier-update' supplier.pk %}" class="btn btn-primary btn-sm">
+    <i class="bi bi-pencil me-1"></i>Modifier
+  </a>
+  <a href="{% url 'people:supplier-delete' supplier.pk %}" class="btn btn-outline-danger btn-sm">
+    <i class="bi bi-trash me-1"></i>
+  </a>
+{% endblock %}
+
+{% block content %}
+
+<!-- Header -->
+<div class="card mb-4">
+  <div class="card-body p-4">
+    <div class="d-flex align-items-center gap-4 flex-wrap">
+      <div style="width:60px;height:60px;background:var(--primary-light);border-radius:14px;
+                  display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <i class="bi bi-building-fill" style="font-size:26px;color:var(--primary);"></i>
+      </div>
+      <div class="flex-grow-1">
+        <div class="d-flex align-items-center gap-3 flex-wrap mb-1">
+          <h2 class="mb-0" style="font-size:20px;font-weight:700;">{{ supplier.name }}</h2>
+          <span class="font-mono text-muted" style="font-size:13px;">{{ supplier.code }}</span>
+          {% if supplier.is_active %}
+            <span class="badge-state badge-done">Actif</span>
+          {% else %}
+            <span class="badge-state badge-inactive">Inactif</span>
+          {% endif %}
+        </div>
+        <div class="d-flex gap-4 flex-wrap text-muted" style="font-size:13px;">
+          {% if supplier.email %}
+            <span><i class="bi bi-envelope me-1"></i>{{ supplier.email }}</span>
+          {% endif %}
+          {% if supplier.phone %}
+            <span><i class="bi bi-telephone me-1"></i>{{ supplier.phone }}</span>
+          {% endif %}
+          {% if supplier.website %}
+            <span>
+              <i class="bi bi-globe me-1"></i>
+              <a href="{{ supplier.website }}" target="_blank">{{ supplier.website }}</a>
+            </span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="row g-4">
+
+  <!-- Contact info -->
+  <div class="col-md-4">
+    <div class="card h-100">
+      <div class="card-header">Coordonnées</div>
+      <div class="card-body p-4">
+        <div class="info-item mb-3">
+          <div class="info-label">NIU / ID fiscal</div>
+          <div class="info-value font-mono">{{ supplier.tax_id|default:"—" }}</div>
+        </div>
+        <div class="info-item mb-3">
+          <div class="info-label">Adresse</div>
+          <div class="info-value">{{ supplier.address|default:"—" }}</div>
+        </div>
+        <div class="info-item mb-3">
+          <div class="info-label">Ville</div>
+          <div class="info-value">{{ supplier.city|default:"—" }}</div>
+        </div>
+        <div class="info-item mb-3">
+          <div class="info-label">Pays</div>
+          <div class="info-value">{{ supplier.country }}</div>
+        </div>
+        <div class="info-item mb-3">
+          <div class="info-label">Personne de contact</div>
+          <div class="info-value">{{ supplier.contact_person|default:"—" }}</div>
+        </div>
+        {% if supplier.notes %}
+        <div class="info-item">
+          <div class="info-label">Notes</div>
+          <div class="info-value" style="font-size:13.5px;">{{ supplier.notes }}</div>
+        </div>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Contracts -->
+  <div class="col-md-8">
+    <div class="card mb-4">
+      <div class="card-header">Contrats liés</div>
+      {% if supplier.contracts.exists %}
+      <div class="table-responsive">
+        <table class="table table-fleet mb-0">
+          <thead>
+            <tr><th>Contrat</th><th>Véhicule</th><th>Fin</th><th>Statut</th><th></th></tr>
+          </thead>
+          <tbody>
+            {% for c in supplier.contracts.all %}
+            <tr>
+              <td class="fw-500">{{ c.name }}</td>
+              <td class="font-mono small">{{ c.vehicle.license_plate }}</td>
+              <td>{{ c.end_date|date:"d/m/Y" }}</td>
+              <td>
+                {% if c.status == 'ACTIVE' %}<span class="badge-state badge-done">Actif</span>
+                {% elif c.status == 'EXPIRED' %}<span class="badge-state badge-expired">Expiré</span>
+                {% else %}<span class="badge-state badge-inactive">{{ c.get_status_display }}</span>{% endif %}
+              </td>
+              <td>
+                <a href="{% url 'operations:contract-detail' c.pk %}"
+                   class="btn btn-sm btn-outline-secondary py-0 px-2">
+                  <i class="bi bi-eye"></i>
+                </a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state"><i class="bi bi-file-earmark-text"></i><p>Aucun contrat lié.</p></div>
+      {% endif %}
+    </div>
+
+    <!-- Services -->
+    <div class="card">
+      <div class="card-header">Services réalisés</div>
+      {% if supplier.services.exists %}
+      <div class="table-responsive">
+        <table class="table table-fleet mb-0">
+          <thead>
+            <tr><th>Description</th><th>Véhicule</th><th>Date</th><th>Coût</th><th>Statut</th></tr>
+          </thead>
+          <tbody>
+            {% for svc in supplier.services.all|slice:":10" %}
+            <tr>
+              <td>{{ svc.description|truncatechars:40 }}</td>
+              <td class="font-mono small">{{ svc.vehicle.license_plate }}</td>
+              <td>{{ svc.date|date:"d/m/Y" }}</td>
+              <td class="font-mono">{{ svc.cost|floatformat:0 }} {{ svc.currency }}</td>
+              <td>
+                {% if svc.status == 'DONE' %}<span class="badge-state badge-done">Terminé</span>
+                {% elif svc.status == 'IN_PROGRESS' %}<span class="badge-state badge-progress">En cours</span>
+                {% else %}<span class="badge-state badge-inactive">{{ svc.get_status_display }}</span>{% endif %}
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state"><i class="bi bi-wrench"></i><p>Aucun service lié.</p></div>
+      {% endif %}
+    </div>
+  </div>
+
+</div>
+{% endblock %}

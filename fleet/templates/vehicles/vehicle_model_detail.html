@@ -1,0 +1,75 @@
+{% extends 'base.html' %}
+{% block title %}{{ vehicle_model }}{% endblock %}
+{% block nav_vehicle_models %}active{% endblock %}
+{% block breadcrumb %}
+  Flotte / <a href="{% url 'vehicles:vehicle-model-list' %}">Modèles</a> /
+  <span class="bc-current">{{ vehicle_model }}</span>
+{% endblock %}
+{% block topbar_actions %}
+  <a href="{% url 'vehicles:vehicle-model-update' vehicle_model.pk %}" class="btn btn-primary btn-sm"><i class="bi bi-pencil me-1"></i>Modifier</a>
+{% endblock %}
+{% block content %}
+<div class="card mb-4">
+  <div class="card-body p-4">
+    <div class="d-flex align-items-center gap-4 flex-wrap">
+      {% if vehicle_model.image %}
+        <img src="{{ vehicle_model.image.url }}" alt="{{ vehicle_model }}"
+             style="width:80px;height:60px;object-fit:contain;background:#f4f6fb;border-radius:10px;padding:6px;">
+      {% else %}
+        <div style="width:80px;height:60px;background:var(--primary-light);border-radius:10px;
+                    display:flex;align-items:center;justify-content:center;">
+          <i class="bi bi-car-front-fill" style="font-size:28px;color:var(--primary);"></i>
+        </div>
+      {% endif %}
+      <div>
+        <h2 class="mb-1" style="font-size:20px;font-weight:700;">{{ vehicle_model }}</h2>
+        <div class="text-muted" style="font-size:13px;">{{ vehicle_model.vehicle_type.name }} · {{ vehicle_model.model_year }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+<div class="row g-4">
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-header">Spécifications techniques</div>
+      <div class="card-body p-4">
+        <div class="info-grid">
+          <div class="info-item"><div class="info-label">Carburant</div><div class="info-value">{{ vehicle_model.fuel_type.name }}</div></div>
+          <div class="info-item"><div class="info-label">Transmission</div><div class="info-value">{{ vehicle_model.transmission.name }}</div></div>
+          <div class="info-item"><div class="info-label">Traction</div><div class="info-value">{{ vehicle_model.traction_type.name }}</div></div>
+          <div class="info-item"><div class="info-label">Puissance</div><div class="info-value">{% if vehicle_model.power %}{{ vehicle_model.power }} {{ vehicle_model.power_unit.code }}{% else %}—{% endif %}</div></div>
+          <div class="info-item"><div class="info-label">Émissions CO2</div><div class="info-value">{% if vehicle_model.co2_emission %}{{ vehicle_model.co2_emission }} {{ vehicle_model.emission_unit.code }}{% else %}—{% endif %}</div></div>
+          <div class="info-item"><div class="info-label">Norme d'émission</div><div class="info-value">{{ vehicle_model.emission_standard|default:"—" }}</div></div>
+          <div class="info-item"><div class="info-label">Sièges</div><div class="info-value">{{ vehicle_model.seats|default:"—" }}</div></div>
+          <div class="info-item"><div class="info-label">Portes</div><div class="info-value">{{ vehicle_model.doors|default:"—" }}</div></div>
+          <div class="info-item"><div class="info-label">Couleur</div><div class="info-value">{{ vehicle_model.color|default:"—" }}</div></div>
+          <div class="info-item"><div class="info-label">Attelage</div><div class="info-value">{% if vehicle_model.has_tow_hitch %}<i class="bi bi-check-circle-fill text-success"></i> Oui{% else %}Non{% endif %}</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="col-md-6">
+    <div class="card h-100">
+      <div class="card-header">Véhicules de ce modèle</div>
+      {% if vehicle_model.vehicles.exists %}
+      <div class="table-responsive">
+        <table class="table table-fleet mb-0">
+          <thead><tr><th>Immatriculation</th><th>État</th><th></th></tr></thead>
+          <tbody>
+            {% for v in vehicle_model.vehicles.all %}
+            <tr>
+              <td class="fw-600 font-mono"><a href="{% url 'vehicles:vehicle-detail' v.pk %}">{{ v.license_plate }}</a></td>
+              <td>{% if v.state == 'REGISTERED' %}<span class="badge-state badge-done">Immatriculé</span>{% else %}<span class="badge-state badge-inactive">{{ v.get_state_display }}</span>{% endif %}</td>
+              <td><a href="{% url 'vehicles:vehicle-detail' v.pk %}" class="btn btn-sm btn-outline-secondary py-0 px-2"><i class="bi bi-eye"></i></a></td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state"><i class="bi bi-car-front"></i><p>Aucun véhicule enregistré pour ce modèle.</p></div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

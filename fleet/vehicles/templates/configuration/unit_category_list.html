@@ -1,0 +1,24 @@
+{% extends 'base.html' %}
+{% block title %}Catégories d'unités{% endblock %}
+{% block breadcrumb %}Configuration / <span class="bc-current">Catégories d'unités</span>{% endblock %}
+{% block topbar_actions %}<a href="{% url 'configuration:unit-category-create' %}" class="btn btn-primary btn-sm"><i class="bi bi-plus-lg me-1"></i>Nouveau</a>{% endblock %}
+{% block content %}
+<div class="page-header"><h1><i class="bi bi-rulers me-2 text-primary"></i>Catégories d'unités</h1></div>
+<div class="card">
+  {% if unit_categories %}
+  <div class="table-responsive">
+    <table class="table table-fleet mb-0">
+      <thead><tr><th>Nom</th><th>Unités</th><th class="text-end">Actions</th></tr></thead>
+      <tbody>{% for obj in unit_categories %}<tr>
+        <td class="fw-600">{{ obj.name }}</td>
+        <td><span class="badge-state badge-new">{{ obj.units.count }}</span></td>
+        <td class="text-end">
+          <a href="{% url 'configuration:unit-category-update' obj.pk %}" class="btn btn-sm btn-outline-primary py-0 px-2"><i class="bi bi-pencil"></i></a>
+          <a href="{% url 'configuration:unit-category-delete' obj.pk %}" class="btn btn-sm btn-outline-danger py-0 px-2"><i class="bi bi-trash"></i></a>
+        </td>
+      </tr>{% endfor %}</tbody>
+    </table>
+  </div>
+  {% else %}<div class="empty-state"><i class="bi bi-rulers"></i><p>Aucune catégorie d'unité.</p></div>{% endif %}
+</div>
+{% endblock %}

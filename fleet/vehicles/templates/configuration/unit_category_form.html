@@ -1,0 +1,7 @@
+{% extends 'configuration/_config_form_base.html' %}
+{% block form_title %}Catégorie d'unité{% endblock %}
+{% block list_url %}{% url 'configuration:unit-category-list' %}{% endblock %}
+{% block list_label %}Catégories d'unités{% endblock %}
+{% block form_heading %}{% if form.instance.pk %}Modifier{% else %}Nouvelle catégorie d'unité{% endif %}{% endblock %}
+{% block form_fields %}<div class="col-12"><label class="form-label">Nom *</label>{{ form.name }}</div>{% endblock %}
+{% block cancel_url %}{% url 'configuration:unit-category-list' %}{% endblock %}

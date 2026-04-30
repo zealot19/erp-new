@@ -1,0 +1,15 @@
+{% extends 'configuration/_config_form_base.html' %}
+{% block nav_document_types %}active{% endblock %}
+{% block form_title %}Type de document{% endblock %}
+{% block list_url %}{% url 'configuration:document-type-list' %}{% endblock %}
+{% block list_label %}Types de documents{% endblock %}
+{% block form_heading %}{% if form.instance.pk %}Modifier{% else %}Nouveau type de document{% endif %}{% endblock %}
+{% block form_fields %}
+  <div class="col-md-4"><label class="form-label">Code *</label>{{ form.code }}<div class="form-text">Ex : ASSURANCE, VIGNETTE</div></div>
+  <div class="col-md-8"><label class="form-label">Libellé *</label>{{ form.label }}</div>
+  <div class="col-12 d-flex align-items-center gap-2 pt-2">
+    {{ form.requires_expiration }}
+    <label class="form-check-label">Ce type de document requiert une date d'expiration</label>
+  </div>
+{% endblock %}
+{% block cancel_url %}{% url 'configuration:document-type-list' %}{% endblock %}

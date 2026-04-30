@@ -1,0 +1,74 @@
+{% extends 'base.html' %}
+{% block title %}Modèles de véhicules{% endblock %}
+{% block nav_vehicle_models %}active{% endblock %}
+
+{% block breadcrumb %}
+  Flotte / <span class="bc-current">Modèles de véhicules</span>
+{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'vehicles:vehicle-model-create' %}" class="btn btn-primary btn-sm">
+    <i class="bi bi-plus-lg me-1"></i>Nouveau modèle
+  </a>
+{% endblock %}
+
+{% block content %}
+<div class="page-header">
+  <h1>Modèles de véhicules</h1>
+</div>
+
+<div class="card">
+  {% if vehicle_models %}
+  <div class="table-responsive">
+    <table class="table table-fleet mb-0">
+      <thead>
+        <tr>
+          <th>Fabricant</th>
+          <th>Modèle</th>
+          <th>Année</th>
+          <th>Type</th>
+          <th>Carburant</th>
+          <th>Puissance</th>
+          <th>Sièges</th>
+          <th class="text-end">Actions</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for m in vehicle_models %}
+        <tr>
+          <td class="fw-600">{{ m.manufacturer.name }}</td>
+          <td>{{ m.name }}</td>
+          <td>{{ m.model_year }}</td>
+          <td><span class="badge-state badge-inactive">{{ m.vehicle_type.name }}</span></td>
+          <td>{{ m.fuel_type.name }}</td>
+          <td>
+            {% if m.power %}{{ m.power }} {{ m.power_unit.code }}{% else %}—{% endif %}
+          </td>
+          <td>{{ m.seats|default:"—" }}</td>
+          <td class="text-end">
+            <a href="{% url 'vehicles:vehicle-model-detail' m.pk %}" class="btn btn-sm btn-outline-secondary py-0 px-2">
+              <i class="bi bi-eye"></i>
+            </a>
+            <a href="{% url 'vehicles:vehicle-model-update' m.pk %}" class="btn btn-sm btn-outline-primary py-0 px-2">
+              <i class="bi bi-pencil"></i>
+            </a>
+            <a href="{% url 'vehicles:vehicle-model-delete' m.pk %}" class="btn btn-sm btn-outline-danger py-0 px-2">
+              <i class="bi bi-trash"></i>
+            </a>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <div class="empty-state">
+    <i class="bi bi-diagram-3"></i>
+    <p>Aucun modèle de véhicule enregistré.</p>
+    <a href="{% url 'vehicles:vehicle-model-create' %}" class="btn btn-primary btn-sm mt-3">
+      <i class="bi bi-plus-lg me-1"></i>Ajouter un modèle
+    </a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

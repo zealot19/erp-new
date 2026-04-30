@@ -1,0 +1,138 @@
+{% extends 'base.html' %}
+{% block title %}{{ contract.name }}{% endblock %}
+{% block nav_contracts %}active{% endblock %}
+{% block breadcrumb %}
+  Opérations / <a href="{% url 'operations:contract-list' %}">Contrats</a> /
+  <span class="bc-current">{{ contract.name }}</span>
+{% endblock %}
+{% block topbar_actions %}
+  <a href="{% url 'operations:contract-update' contract.pk %}" class="btn btn-primary btn-sm"><i class="bi bi-pencil me-1"></i>Modifier</a>
+  <a href="{% url 'operations:contract-delete' contract.pk %}" class="btn btn-outline-danger btn-sm"><i class="bi bi-trash me-1"></i></a>
+{% endblock %}
+{% block content %}
+
+<!-- Header -->
+<div class="card mb-4">
+  <div class="card-body p-4">
+    <div class="d-flex align-items-start gap-4 flex-wrap">
+      <div style="width:60px;height:60px;background:var(--primary-light);border-radius:12px;
+                  display:flex;align-items:center;justify-content:center;flex-shrink:0;">
+        <i class="bi bi-file-earmark-text-fill" style="font-size:28px;color:var(--primary);"></i>
+      </div>
+      <div class="flex-grow-1">
+        <div class="d-flex align-items-center gap-3 flex-wrap mb-1">
+          <h2 class="mb-0" style="font-size:18px;font-weight:700;">{{ contract.name }}</h2>
+          {% if contract.status == 'ACTIVE' %}<span class="badge-state badge-done">Actif</span>
+          {% elif contract.status == 'DRAFT' %}<span class="badge-state badge-draft">Brouillon</span>
+          {% elif contract.status == 'EXPIRED' %}<span class="badge-state badge-expired">Expiré</span>
+          {% elif contract.status == 'CANCELLED' %}<span class="badge-state badge-cancelled">Annulé</span>{% endif %}
+          {% if contract.is_expired and contract.status == 'ACTIVE' %}
+            <span class="badge-state badge-cancelled"><i class="bi bi-exclamation-triangle-fill me-1"></i>Expiré</span>
+          {% endif %}
+        </div>
+        <div class="text-muted" style="font-size:13px;">
+          Réf: <span class="font-mono">{{ contract.reference|default:"—" }}</span> ·
+          <a href="{% url 'vehicles:vehicle-detail' contract.vehicle.pk %}" class="font-mono fw-600">{{ contract.vehicle.license_plate }}</a> ·
+          {{ contract.start_date|date:"d/m/Y" }} → {{ contract.end_date|date:"d/m/Y" }}
+        </div>
+      </div>
+      <div class="text-end">
+        <div class="text-muted small">Coût d'activation</div>
+        <div style="font-size:20px;font-weight:700;">{{ contract.activation_cost|floatformat:0 }} {{ contract.currency }}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Tabs -->
+<ul class="nav nav-tabs-fleet" id="contractTabs">
+  <li><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#ct-info"><i class="bi bi-info-circle me-1"></i>Informations</button></li>
+  <li><button class="nav-link" data-bs-toggle="tab" data-bs-target="#ct-costs"><i class="bi bi-currency-dollar me-1"></i>Coûts récurrents <span class="badge bg-secondary ms-1" style="font-size:10px;">{{ recurring_costs.count }}</span></button></li>
+</ul>
+
+<div class="tab-content">
+
+  <!-- Info -->
+  <div class="tab-pane fade show active" id="ct-info">
+    <div class="card" style="border-top:none;border-top-left-radius:0;border-top-right-radius:0;">
+      <div class="card-body p-4">
+        <div class="form-section-title mt-0">Parties prenantes</div>
+        <div class="info-grid mb-4">
+          <div class="info-item"><div class="info-label">Véhicule</div>
+            <div class="info-value"><a href="{% url 'vehicles:vehicle-detail' contract.vehicle.pk %}" class="font-mono">{{ contract.vehicle.license_plate }}</a></div></div>
+          <div class="info-item"><div class="info-label">Fournisseur</div>
+            <div class="info-value">{{ contract.supplier.name|default:"—" }}</div></div>
+          <div class="info-item"><div class="info-label">Conducteur</div>
+            <div class="info-value">{{ contract.driver.full_name|default:"—" }}</div></div>
+          <div class="info-item"><div class="info-label">Responsable</div>
+            <div class="info-value">{{ contract.responsible.get_full_name|default:"—" }}</div></div>
+        </div>
+        <div class="form-section-title">Type & Dates</div>
+        <div class="info-grid mb-4">
+          <div class="info-item"><div class="info-label">Type d'intervention</div>
+            <div class="info-value">{{ contract.intervention_type.name }}</div></div>
+          <div class="info-item"><div class="info-label">Période de facturation</div>
+            <div class="info-value">{{ contract.billing_period.name|default:"—" }}</div></div>
+          <div class="info-item"><div class="info-label">Date de signature</div>
+            <div class="info-value">{{ contract.creation_date|date:"d/m/Y"|default:"—" }}</div></div>
+          <div class="info-item"><div class="info-label">Début</div>
+            <div class="info-value">{{ contract.start_date|date:"d/m/Y" }}</div></div>
+          <div class="info-item"><div class="info-label">Fin</div>
+            <div class="info-value">{{ contract.end_date|date:"d/m/Y" }}</div></div>
+          <div class="info-item"><div class="info-label">Devise</div>
+            <div class="info-value">{{ contract.currency }}</div></div>
+        </div>
+        {% if contract.included_services.all %}
+        <div class="form-section-title">Services inclus</div>
+        <div class="d-flex flex-wrap gap-2 mb-4">
+          {% for s in contract.included_services.all %}
+          <span class="tag-pill">{{ s.name }}</span>
+          {% endfor %}
+        </div>
+        {% endif %}
+        {% if contract.terms %}
+        <div class="form-section-title">Conditions générales</div>
+        <p style="font-size:13.5px;">{{ contract.terms }}</p>
+        {% endif %}
+      </div>
+    </div>
+  </div>
+
+  <!-- Recurring costs -->
+  <div class="tab-pane fade" id="ct-costs">
+    <div class="card" style="border-top:none;border-top-left-radius:0;border-top-right-radius:0;">
+      <div class="card-header d-flex justify-content-between align-items-center">
+        <span>Coûts récurrents</span>
+        <a href="{% url 'operations:recurring-cost-create' contract.pk %}" class="btn btn-sm btn-primary">
+          <i class="bi bi-plus-lg me-1"></i>Ajouter
+        </a>
+      </div>
+      {% if recurring_costs %}
+      <div class="table-responsive">
+        <table class="table table-fleet mb-0">
+          <thead>
+            <tr><th>Description</th><th>Montant</th><th>Devise</th><th>Période</th><th class="text-end">Actions</th></tr>
+          </thead>
+          <tbody>
+            {% for rc in recurring_costs %}
+            <tr>
+              <td>{{ rc.description }}</td>
+              <td class="fw-600 font-mono">{{ rc.amount|floatformat:0 }}</td>
+              <td>{{ rc.currency }}</td>
+              <td><span class="badge-state badge-inactive">{{ rc.period.name }}</span></td>
+              <td class="text-end">
+                <a href="{% url 'operations:recurring-cost-update' rc.pk %}" class="btn btn-sm btn-outline-primary py-0 px-2"><i class="bi bi-pencil"></i></a>
+                <a href="{% url 'operations:recurring-cost-delete' rc.pk %}" class="btn btn-sm btn-outline-danger py-0 px-2"><i class="bi bi-trash"></i></a>
+              </td>
+            </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+      {% else %}
+      <div class="empty-state"><i class="bi bi-currency-dollar"></i><p>Aucun coût récurrent défini.</p></div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,46 @@
+{% extends 'base.html' %}
+{% block title %}{% if form.instance.pk %}Modifier le siège{% else %}Nouveau siège{% endif %}{% endblock %}
+{% block nav_vehicles %}active{% endblock %}
+{% block breadcrumb %}
+  Flotte / <a href="{% url 'vehicles:vehicle-list' %}">Véhicules</a> /
+  {% if layout %}<a href="{% url 'vehicles:vehicle-layout-detail' layout.pk %}">{{ layout.name }}</a> / {% endif %}
+  <span class="bc-current">Siège</span>
+{% endblock %}
+{% block content %}
+<div class="row justify-content-center">
+  <div class="col-lg-6">
+    <div class="page-header">
+      <h1>{% if form.instance.pk %}Modifier le siège{% else %}Nouveau siège{% endif %}</h1>
+    </div>
+    <form method="post">
+      {% csrf_token %}
+      <div class="card mb-4">
+        <div class="card-body p-4">
+          <div class="row g-3">
+            <div class="col-12"><label class="form-label">Disposition *</label>{{ form.layout }}</div>
+            <div class="col-md-4"><label class="form-label">Numéro *</label>{{ form.seat_number }}<div class="form-text">Ex : A1, B3, 12</div></div>
+            <div class="col-md-4"><label class="form-label">Rangée *</label>{{ form.row }}</div>
+            <div class="col-md-4"><label class="form-label">Colonne *</label>{{ form.column }}</div>
+            <div class="col-md-6"><label class="form-label">Type *</label>{{ form.seat_type }}</div>
+            <div class="col-md-6 d-flex align-items-center pt-4">
+              {{ form.is_available }}<label class="form-check-label ms-2">Disponible</label>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="d-flex gap-2 justify-content-end">
+        <a href="javascript:history.back()" class="btn btn-outline-secondary"><i class="bi bi-x-lg me-1"></i>Annuler</a>
+        <button type="submit" class="btn btn-primary"><i class="bi bi-check-lg me-1"></i>Enregistrer</button>
+      </div>
+    </form>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}
+<script>
+  document.querySelectorAll('input:not([type=checkbox]), select, textarea').forEach(el => {
+    if (el.tagName === 'SELECT') el.classList.add('form-select');
+    else el.classList.add('form-control');
+  });
+</script>
+{% endblock %}

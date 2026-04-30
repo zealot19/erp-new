@@ -1,0 +1,266 @@
+{% extends 'base.html' %}
+
+{% block title %}Véhicules{% endblock %}
+{% block nav_vehicles %}active{% endblock %}
+
+{% block breadcrumb %}
+  Flotte / <span class="bc-current">Véhicules</span>
+{% endblock %}
+
+{% block topbar_actions %}
+  <a href="{% url 'vehicles:vehicle-create' %}" class="btn btn-primary btn-sm">
+    <i class="bi bi-plus-lg me-1"></i> Nouveau véhicule
+  </a>
+{% endblock %}
+
+{% block content %}
+
+<!-- Stat row -->
+<div class="row g-3 mb-4">
+  <div class="col-sm-6 col-lg-3">
+    <div class="stat-card d-flex align-items-center gap-3">
+      <div class="stat-icon" style="background:#dbeafe; color:#1a56db;"><i class="bi bi-car-front-fill"></i></div>
+      <div>
+        <div class="stat-label">Total véhicules</div>
+        <div class="stat-value">{{ vehicles.count }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-lg-3">
+    <div class="stat-card d-flex align-items-center gap-3">
+      <div class="stat-icon" style="background:#d1fae5; color:#065f46;"><i class="bi bi-check-circle-fill"></i></div>
+      <div>
+        <div class="stat-label">Immatriculés</div>
+        <div class="stat-value">{{ vehicles|dictsortreversed:"state"|length }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-lg-3">
+    <div class="stat-card d-flex align-items-center gap-3">
+      <div class="stat-icon" style="background:#fef3c7; color:#92400e;"><i class="bi bi-person-badge-fill"></i></div>
+      <div>
+        <div class="stat-label">Avec conducteur</div>
+        <div class="stat-value">{{ vehicles|length }}</div>
+      </div>
+    </div>
+  </div>
+  <div class="col-sm-6 col-lg-3">
+    <div class="stat-card d-flex align-items-center gap-3">
+      <div class="stat-icon" style="background:#fee2e2; color:#991b1b;"><i class="bi bi-exclamation-triangle-fill"></i></div>
+      <div>
+        <div class="stat-label">Hors service</div>
+        <div class="stat-value">0</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Toolbar -->
+<div class="card mb-3">
+  <div class="card-body py-2 px-3 d-flex align-items-center gap-2 flex-wrap">
+    <!-- Search -->
+    <form method="get" class="d-flex gap-2 flex-grow-1" style="max-width:360px;">
+      <div class="input-group input-group-sm">
+        <span class="input-group-text bg-white border-end-0">
+          <i class="bi bi-search text-muted"></i>
+        </span>
+        <input type="text" name="q" value="{{ request.GET.q }}" class="form-control border-start-0 ps-0"
+               placeholder="Immatriculation, VIN, modèle…">
+      </div>
+      <button type="submit" class="btn btn-primary btn-sm">Filtrer</button>
+    </form>
+
+    <div class="ms-auto d-flex gap-2 align-items-center">
+      <!-- State filter -->
+      <select class="form-select form-select-sm" style="width:auto;" onchange="window.location.search='?state='+this.value">
+        <option value="">Tous les états</option>
+        <option value="TO_ORDER" {% if request.GET.state == 'TO_ORDER' %}selected{% endif %}>À commander</option>
+        <option value="NEW_REQUEST" {% if request.GET.state == 'NEW_REQUEST' %}selected{% endif %}>Nouvelle demande</option>
+        <option value="REGISTERED" {% if request.GET.state == 'REGISTERED' %}selected{% endif %}>Immatriculé</option>
+        <option value="DECOMMISSIONED" {% if request.GET.state == 'DECOMMISSIONED' %}selected{% endif %}>Déclassé</option>
+      </select>
+
+      <!-- View toggle -->
+      <div class="btn-group btn-group-sm" role="group">
+        <button type="button" class="btn btn-outline-secondary active" id="btn-list" title="Liste">
+          <i class="bi bi-list-ul"></i>
+        </button>
+        <button type="button" class="btn btn-outline-secondary" id="btn-kanban" title="Kanban">
+          <i class="bi bi-grid-3x3-gap"></i>
+        </button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- LIST VIEW -->
+<div id="view-list">
+  <div class="card">
+    {% if vehicles %}
+    <div class="table-responsive">
+      <table class="table table-fleet mb-0">
+        <thead>
+          <tr>
+            <th>Immatriculation</th>
+            <th>Modèle</th>
+            <th>Catégorie</th>
+            <th>Conducteur</th>
+            <th>Parking</th>
+            <th>État</th>
+            <th class="text-end">Actions</th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for v in vehicles %}
+          <tr>
+            <td>
+              <a href="{% url 'vehicles:vehicle-detail' v.pk %}" class="fw-600 text-decoration-none font-mono">
+                {{ v.license_plate }}
+              </a>
+            </td>
+            <td>
+              <div class="fw-500">{{ v.vehicle_model.name }}</div>
+              <div class="small text-muted">{{ v.vehicle_model.manufacturer.name }}</div>
+            </td>
+            <td><span class="badge-state badge-inactive">{{ v.category.name }}</span></td>
+            <td>
+              {% if v.driver %}
+                <div class="d-flex align-items-center gap-2">
+                  <div class="avatar" style="width:26px;height:26px;font-size:10px;">
+                    {{ v.driver.first_name|first }}{{ v.driver.last_name|first }}
+                  </div>
+                  {{ v.driver.full_name }}
+                </div>
+              {% else %}
+                <span class="text-muted small">—</span>
+              {% endif %}
+            </td>
+            <td>{{ v.parking.name|default:"—" }}</td>
+            <td>
+              {% if v.state == 'REGISTERED' %}
+                <span class="badge-state badge-done">Immatriculé</span>
+              {% elif v.state == 'NEW_REQUEST' %}
+                <span class="badge-state badge-new">Nouvelle demande</span>
+              {% elif v.state == 'TO_ORDER' %}
+                <span class="badge-state badge-progress">À commander</span>
+              {% elif v.state == 'DECOMMISSIONED' %}
+                <span class="badge-state badge-cancelled">Déclassé</span>
+              {% endif %}
+            </td>
+            <td class="text-end">
+              <a href="{% url 'vehicles:vehicle-detail' v.pk %}" class="btn btn-sm btn-outline-secondary py-0 px-2">
+                <i class="bi bi-eye"></i>
+              </a>
+              <a href="{% url 'vehicles:vehicle-update' v.pk %}" class="btn btn-sm btn-outline-primary py-0 px-2">
+                <i class="bi bi-pencil"></i>
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+      <div class="empty-state">
+        <i class="bi bi-car-front"></i>
+        <p>Aucun véhicule trouvé.</p>
+        <a href="{% url 'vehicles:vehicle-create' %}" class="btn btn-primary btn-sm mt-3">
+          <i class="bi bi-plus-lg me-1"></i> Ajouter un véhicule
+        </a>
+      </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- KANBAN VIEW -->
+<div id="view-kanban" style="display:none;">
+  <div class="row g-3">
+    {% for v in vehicles %}
+    <div class="col-sm-6 col-xl-4">
+      <div class="card h-100" style="border-top:3px solid var(--primary);">
+        <div class="card-body p-3">
+          <div class="d-flex justify-content-between align-items-start mb-2">
+            <span class="font-mono fw-700" style="font-size:15px; color:var(--primary);">{{ v.license_plate }}</span>
+            {% if v.state == 'REGISTERED' %}
+              <span class="badge-state badge-done">Immatriculé</span>
+            {% elif v.state == 'NEW_REQUEST' %}
+              <span class="badge-state badge-new">Nouvelle demande</span>
+            {% elif v.state == 'TO_ORDER' %}
+              <span class="badge-state badge-progress">À commander</span>
+            {% elif v.state == 'DECOMMISSIONED' %}
+              <span class="badge-state badge-cancelled">Déclassé</span>
+            {% endif %}
+          </div>
+
+          <div class="fw-600 mb-1">{{ v.vehicle_model.manufacturer.name }} {{ v.vehicle_model.name }}</div>
+          <div class="small text-muted mb-3">{{ v.category.name }} · {{ v.vehicle_model.model_year }}</div>
+
+          {% if v.driver %}
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <i class="bi bi-person-badge text-muted" style="font-size:13px;"></i>
+            <span class="small">{{ v.driver.full_name }}</span>
+          </div>
+          {% endif %}
+          {% if v.parking %}
+          <div class="d-flex align-items-center gap-2 mb-2">
+            <i class="bi bi-p-square text-muted" style="font-size:13px;"></i>
+            <span class="small">{{ v.parking.name }}</span>
+          </div>
+          {% endif %}
+
+          <div class="d-flex gap-2 mt-3 pt-3" style="border-top:1px solid var(--border);">
+            {% for tag in v.tags.all %}
+              <span class="tag-pill">{{ tag.name }}</span>
+            {% endfor %}
+          </div>
+        </div>
+        <div class="card-footer bg-transparent py-2 px-3 d-flex gap-2">
+          <a href="{% url 'vehicles:vehicle-detail' v.pk %}" class="btn btn-sm btn-outline-primary flex-fill">
+            <i class="bi bi-eye me-1"></i>Voir
+          </a>
+          <a href="{% url 'vehicles:vehicle-update' v.pk %}" class="btn btn-sm btn-outline-secondary">
+            <i class="bi bi-pencil"></i>
+          </a>
+        </div>
+      </div>
+    </div>
+    {% empty %}
+    <div class="col-12">
+      <div class="empty-state">
+        <i class="bi bi-car-front"></i>
+        <p>Aucun véhicule trouvé.</p>
+      </div>
+    </div>
+    {% endfor %}
+  </div>
+</div>
+
+{% endblock %}
+
+{% block extra_js %}
+<script>
+  const btnList   = document.getElementById('btn-list');
+  const btnKanban = document.getElementById('btn-kanban');
+  const viewList   = document.getElementById('view-list');
+  const viewKanban = document.getElementById('view-kanban');
+
+  const pref = localStorage.getItem('fleet_view') || 'list';
+  if (pref === 'kanban') { switchKanban(); }
+
+  btnList.addEventListener('click', () => { localStorage.setItem('fleet_view','list'); switchList(); });
+  btnKanban.addEventListener('click', () => { localStorage.setItem('fleet_view','kanban'); switchKanban(); });
+
+  function switchList() {
+    viewList.style.display = '';
+    viewKanban.style.display = 'none';
+    btnList.classList.add('active');
+    btnKanban.classList.remove('active');
+  }
+  function switchKanban() {
+    viewList.style.display = 'none';
+    viewKanban.style.display = '';
+    btnKanban.classList.add('active');
+    btnList.classList.remove('active');
+  }
+</script>
+{% endblock %}
